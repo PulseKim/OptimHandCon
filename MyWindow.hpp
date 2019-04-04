@@ -45,6 +45,7 @@ public:
 
   Eigen::Vector3d getMidPoint(Eigen::Vector3d first, Eigen::Vector3d second, Eigen::Vector3d first_dir, Eigen::Vector3d second_dir);
 
+  void drawMultipleTendons();
 
   void draw() override;
 
@@ -55,4 +56,5 @@ protected:
 	SkeletonPtr floor;
 	SkeletonPtr hand;
 	std::vector<Tendon*> mTendon;
+  std::vector<std::pair<int, Tendon*>> mFingerTendon;
 };

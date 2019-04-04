@@ -36,6 +36,9 @@ void MyWindow::initSkeleton(){
 	HandMaker handMaker;
 	handMaker.makeHand(hand);
 
+	mFingerTendon = handMaker.fingerTendon;
+	std::cout << mFingerTendon.size() << std::endl;
+
 	mWorld->addSkeleton(floor);
 	mWorld->addSkeleton(hand);
 }
@@ -212,6 +215,36 @@ void MyWindow::drawTendon(){
 	}
 }
 
+void MyWindow::drawMultipleTendons(){
+	glColor3f(1.0, 0.0, 0.0); 
+	glPointSize(8.0);
+	glLineWidth(8.0); 
+	for(int i = 0; i < mFingerTendon.size(); ++i){
+		//std::cout << i <<std::endl;
+		for(int j = 0; j < mFingerTendon[i].second->mAnchor_dir.size()-1; ++j){
+			//std::cout << i << std::endl;
+			Eigen::Vector3d first = mFingerTendon[i].second->GetPoint(mFingerTendon[i].second->mAnchor_dir[j]);
+			Eigen::Vector3d second = mFingerTendon[i].second->GetPoint(mFingerTendon[i].second->mAnchor_dir[j+1]);
+			Eigen::Vector3d first_dir = mFingerTendon[i].second->GetDir(mFingerTendon[i].second->mAnchor_dir[j], 0);
+			Eigen::Vector3d second_dir = mFingerTendon[i].second->GetDir(mFingerTendon[i].second->mAnchor_dir[j+1], 1);
+			Eigen::Vector3d midpoint = getMidPoint(first,second,first_dir, second_dir);
+
+
+			glBegin(GL_POINTS);
+			glVertex3f(first[0], first[1], first[2]);
+			glVertex3f(second[0], second[1], second[2]);
+			glEnd();
+
+			glBegin(GL_LINE_STRIP);
+			glVertex3f(first[0], first[1], first[2]);
+			glVertex3d(midpoint[0], midpoint[1], midpoint[2]);
+			glVertex3f(second[0], second[1], second[2]);
+			glEnd();
+		}
+	}
+}
+
+
 Eigen::Vector3d MyWindow::getMidPoint(Eigen::Vector3d first, Eigen::Vector3d second, Eigen::Vector3d first_dir, Eigen::Vector3d second_dir)
 {
 	Eigen::Vector3d midpoint;
@@ -296,6 +329,7 @@ void MyWindow::draw()
 	glEnable(GL_LIGHTING);
 	drawWorld();
 	glDisable(GL_LIGHTING);
+	drawMultipleTendons();
 	//drawTendon();
 	glEnable(GL_LIGHTING);
 

@@ -7,9 +7,10 @@
 
 const double finger_width = 0.5;
 const double finger_height = 1.0;
+const double weld_height = 0.2;
 const double gap = 0.2;
 const double palm_width = 2.6;
-const double palm_height = 4.0;
+const double palm_height = 3.8;
 const double thumb_width = 0.7;
 const double thumb_height = 1.0;
 const double hand_z = 0.5;
@@ -28,10 +29,15 @@ public:
 	void makeThumb(const SkeletonPtr& hand);
 	void makeSingleFinger(const SkeletonPtr& hand, int idx);
 	void tendonSingleFinger(const SkeletonPtr& hand, int idx);
+	void tendonThumb(const SkeletonPtr& hand);
+
+
+public:
+	std::vector<std::pair<int, Tendon*>> fingerTendon;
 
 protected:
 	BodyNode* mPalm;
 	SkeletonPtr mHand;
 	SkelParser mSkel;
-	std::vector<std::pair<int, Tendon*>> fingerTendon;
+
 };

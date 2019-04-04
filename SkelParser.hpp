@@ -32,4 +32,6 @@ public:
   BodyNode* makeRevoluteJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
   double width, double length, double z_len, double x_offset, double y_offset, double z_offset);
   void setGeometry(const SkeletonPtr& skel, const std::string& name, int degree, int dof);
+  BodyNode* makeWeldJoint (const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+  double width, double length, double z_len, double x_offset, double y_offset, double z_offset);
 };
