@@ -15,11 +15,11 @@ int count = 5;
 Controller::Controller(const SkeletonPtr& finger, std::vector<Tendon*> tendon, int type): mFinger(finger){
     mTendon = tendon;
     if(type == JOINT_F){
-      jointControlSetter();
-  }
-  else if(type == LINK_F){
+          jointControlSetter();
+    }
+    else if(type == HAND){
 
-  }
+    }
 }
 
 void Controller::jointControlSetter(){
@@ -34,12 +34,12 @@ void Controller::jointControlSetter(){
     for(std::size_t i = 0; i < nDofs; ++i){
       mKp(i,i) = mag_Kp;
       mKd(i,i) = mag_Kd;
-  }
-  Controller::setTargetPosition(mFinger->getPositions());
+    }
+    Controller::setTargetPosition(mFinger->getPositions());
 }
 
 void Controller::setTargetPosition(const Eigen::VectorXd& pose){
-    // std::cout << pose << std::endl;
+    //std::cout << pose.size() << std::endl;
 	mTargetPositions = pose;
 }
 
@@ -79,10 +79,10 @@ void Controller::addSPDForces(){
     mForces += p + d - mKd * qddot * mFinger->getTimeStep();
     mFinger->setForces(mForces);
     
-    if(count > 0) {
-        std::cout << count << "is "<<std::endl;
-        std::cout << mForces << std::endl;
-    }
+    // if(count > 0) {
+    //     std::cout << count << "is "<<std::endl;
+    //     std::cout << mForces << std::endl;
+    // }
     count--;
 }
 

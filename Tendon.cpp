@@ -133,6 +133,7 @@ Tendon::ApplyForceToBodyDir(double force_ext)
 		// std::cout << loc_dir << std::endl;
 
 	}
+	mForce = force_ext;
 	cnt --;
 	return currForces;
 }

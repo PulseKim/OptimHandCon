@@ -4,6 +4,7 @@
 #include <dart/utils/utils.hpp>
 #include "Controller.hpp"
 #include "HandMaker.hpp"
+#include "IkSolver.hpp"
 
 
 using namespace dart::common;
@@ -14,7 +15,9 @@ using namespace dart::gui::glut;
 using namespace dart::math;
 
 const int default_countdown = 100;
+const int default_countdown_movement = 1000;
 const double default_force = 500.0;
+const int grad_Iter = 500;
 
 
 class MyWindow : public SimWindow
@@ -49,12 +52,24 @@ public:
 
   void draw() override;
 
+  void targetMovement();
+
+  double radian(double angle);
+
+  void setTarget();
+
 protected:
 	int mForceCountDown;
-	std::unique_ptr<Controller> mController;
-	SkeletonPtr finger;
-	SkeletonPtr floor;
-	SkeletonPtr hand;
-	std::vector<Tendon*> mTendon;
+  int mPoseCountDown;
+
+  std::unique_ptr<Controller> mController;
+  SkeletonPtr finger;
+  SkeletonPtr floor;
+  SkeletonPtr hand;
+  std::vector<Tendon*> mTendon;
   std::vector<std::pair<int, Tendon*>> mFingerTendon;
+  Eigen::VectorXd defaultPose;
+  Eigen::VectorXd goalPose;
+  std::vector<std::pair<Eigen::Vector3d, int>> Ends;
+
 };

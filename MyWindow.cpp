@@ -10,20 +10,42 @@ using namespace dart::gui;
 using namespace dart::gui::glut;
 using namespace dart::math;
 
-bool controlBit;
-Eigen::VectorXd defaultPose;
+bool controlBit = false;
+int mIKCountDown = 0;
+
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 {	
 	this->setWorld(world);
 	mWorld->setGravity(Eigen::Vector3d(0,-9.81,0.0));
 	initSkeleton();
+	std::vector<Tendon*> tempTendon;
+	for(int i = 0 ; i < mFingerTendon.size();++i){
+		tempTendon.push_back(mFingerTendon[i].second);
+	}
+	defaultPose = hand->getPositions();
+	mController = dart::common::make_unique<Controller>(
+		mWorld->getSkeleton("hand"),tempTendon, JOINT_F);
+
+	targetMovement();
+
+	// ik.IKSingleConfig(temporal, hand, 1);
+
 	// initSkeletonFinger();    
 	// initTendonFinger();
 	// controlBit = true;
 	// defaultPose = finger->getPositions();
 	// mController = dart::common::make_unique<Controller>(
 	// 	mWorld->getSkeleton("finger"),mTendon, JOINT_F);
+	
+	
+}
+
+void MyWindow::setTarget(){
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[2]) ,3));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[2]) ,2));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[2]) ,1));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[2]) ,0));
 }
 
 void MyWindow::initSkeleton(){
@@ -37,7 +59,7 @@ void MyWindow::initSkeleton(){
 	handMaker.makeHand(hand);
 
 	mFingerTendon = handMaker.fingerTendon;
-	std::cout << mFingerTendon.size() << std::endl;
+	//std::cout << mFingerTendon.size() << std::endl;
 
 	mWorld->addSkeleton(floor);
 	mWorld->addSkeleton(hand);
@@ -66,11 +88,25 @@ void MyWindow::initSkeletonFinger()
 	mWorld->addSkeleton(floor);
 }
 
+double MyWindow::radian(double angle){
+	double rad = angle * M_PI / 180;
+	return rad;
+}
+
+void MyWindow::targetMovement()
+{
+	//std::cout << "enter" << std::endl;
+	goalPose = defaultPose;
+	goalPose[1] = radian(30);
+	goalPose[3] = -3.0;
+	//std::cout << goalPose << std::endl;
+}
 
 void MyWindow::basicMovement(){
+	double time = mWorld->getTime();
 	if(controlBit){
 		Eigen::VectorXd pose = defaultPose;
-		double basic_angle = 0 * M_PI / 180;
+		double basic_angle = sin(time)* 20 * M_PI / 180;
 		pose[0] = basic_angle;
 		basic_angle = 20 * M_PI / 180;
 		pose[2] = basic_angle;
@@ -140,7 +176,8 @@ void MyWindow::showTorque()
 	// std::cout <<"Force" << std::endl;
 	// std::cout << finger->getExternalForces() << std::endl;
 	// std::cout << finger->getExternalForces() << std::endl;
-	std::cout << finger->getPositions() << std::endl;
+	std::cout << "pose" << std::endl;
+	std::cout << hand->getPositions() << std::endl;
 }
 
   /// Handle keyboard input
@@ -152,15 +189,17 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 		mForceCountDown = default_countdown;
 		break;
 		case 'a':
-		for(std::size_t i =1 ; i < mTendon.size(); ++i)
-			mTendon[mTendon.size()-1]->ApplyForceToBody();
+		mPoseCountDown = default_countdown_movement;
+		controlBit = !controlBit;
 		break;
 		case 'z':
 		MyWindow::showTorque();
 		break;
 		case 'x':
-		MyWindow::basicMovement();
-		controlBit = !controlBit;
+		setTarget();
+		mIKCountDown = grad_Iter;
+		// MyWindow::basicMovement();
+		// controlBit = !controlBit;
 		break;
 
 		default:
@@ -170,18 +209,43 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 
 void MyWindow::timeStepping() 
 {
-	// mController->clearForces();
+	mController->clearForces();
+	mController->addSPDForces();
 	// mController->addSPDTendonDirectionForces();
+	
+	if(mIKCountDown > 0){
+		IkSolver ik;
+		mController->setTargetPosition(ik.TotalIk(Ends, hand));
+		--mIKCountDown;
+	}
+
+	if(mPoseCountDown > 0)
+	{
+		if(mPoseCountDown%50 == 0){
+			Eigen::VectorXd targetpose = defaultPose;
+			if(controlBit){
+				for(int i =0; i<targetpose.size();++i)
+					targetpose[i] = defaultPose[i] + (goalPose[i] - defaultPose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
+			}
+			else{
+				for(int i =0; i<targetpose.size();++i)
+					targetpose[i] = goalPose[i] + (defaultPose[i] - goalPose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
+			}
+		//std::cout<< targetpose[3] <<std::endl;
+			mController->setTargetPosition(targetpose);
+		}
+		--mPoseCountDown;
+	}
 
 	if(mForceCountDown > 0)
 	{
 		BodyNode* bnn = mWorld->getSkeleton("finger")->getBodyNode("L2");
-
 		bnn->addExtForce(-default_force * Eigen::Vector3d::UnitZ(),
 			bnn->getCOM(), false, false);
 
 		--mForceCountDown;
 	}
+	// basicMovement();
 
     // Step the simulation forward
 	SimWindow::timeStepping();
@@ -189,7 +253,6 @@ void MyWindow::timeStepping()
 }
 
 void MyWindow::drawTendon(){
-	glColor3f(1.0, 0.0, 0.0); 
 	glPointSize(8.0);
 	glLineWidth(8.0); 
 	for(int i = 0; i < mTendon.size(); ++i){
@@ -200,11 +263,7 @@ void MyWindow::drawTendon(){
 			Eigen::Vector3d second_dir = mTendon[i]->GetDir(mTendon[i]->mAnchor_dir[j+1], 1);
 			Eigen::Vector3d midpoint = getMidPoint(first,second,first_dir, second_dir);
 
-
-			glBegin(GL_POINTS);
-			glVertex3f(first[0], first[1], first[2]);
-			glVertex3f(second[0], second[1], second[2]);
-			glEnd();
+			glColor3f(mTendon[i]->mForce* 0.7 , 0.0, -mTendon[i]->mForce*0.7);
 
 			glBegin(GL_LINE_STRIP);
 			glVertex3f(first[0], first[1], first[2]);
@@ -229,11 +288,7 @@ void MyWindow::drawMultipleTendons(){
 			Eigen::Vector3d second_dir = mFingerTendon[i].second->GetDir(mFingerTendon[i].second->mAnchor_dir[j+1], 1);
 			Eigen::Vector3d midpoint = getMidPoint(first,second,first_dir, second_dir);
 
-
-			glBegin(GL_POINTS);
-			glVertex3f(first[0], first[1], first[2]);
-			glVertex3f(second[0], second[1], second[2]);
-			glEnd();
+			//glColor3f(mFingerTendon[i].second->mForce* 0.2 , 0.0, 0.0);
 
 			glBegin(GL_LINE_STRIP);
 			glVertex3f(first[0], first[1], first[2]);
@@ -329,8 +384,8 @@ void MyWindow::draw()
 	glEnable(GL_LIGHTING);
 	drawWorld();
 	glDisable(GL_LIGHTING);
-	drawMultipleTendons();
-	//drawTendon();
+	// drawMultipleTendons();
+	// drawTendon();
 	glEnable(GL_LIGHTING);
 
 	  // display the frame count in 2D text

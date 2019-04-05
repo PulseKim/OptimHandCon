@@ -24,6 +24,7 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 
 	for(int i = 0; i < 4; ++i)
 		tendonSingleFinger(hand, i);
+	tendonThumb(hand);
 }
 
 BodyNode* HandMaker::makePalm(const SkeletonPtr& hand)
@@ -69,8 +70,10 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 
 void HandMaker::makeThumb(const SkeletonPtr& hand)
 {
-	std::string name = "thumb_ball";
-	BodyNode* bn = mSkel.makeBallJoint(hand, mPalm, name, hand_z, thumb_height, thumb_width, 0.0, -thumb_height, (palm_width)/2);
+	std::string name = "thumb_weld";
+	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, thumb_width, 0.0, -thumb_height, palm_width/2);
+	name = "thumb_ball";
+	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0);
 	name = "thumb_revol_down";
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0);
 	name = "thumb_revol_up";
@@ -134,5 +137,54 @@ void HandMaker::tendonSingleFinger(const SkeletonPtr& hand, int idx)
 }
 
 void HandMaker::tendonThumb(const SkeletonPtr& hand){
-	
+	std::string currName = "thumb_weld";
+	std::string tendonName = "thumb_longitude";
+
+	BodyNode* bn = hand->getBodyNode(currName);
+
+	for(std::size_t i = 0; i<3 ; ++i){
+		fingerTendon.push_back(std::make_pair(4, new Tendon(tendonName + "ans")));
+		fingerTendon.push_back(std::make_pair(4, new Tendon(tendonName + "pos")));
+	}
+	Eigen::Vector3d down_link(thumb_width/2, -thumb_height/6, 0);
+	Eigen::Vector3d down_opp(-thumb_width/2, -thumb_height/6, 0);
+	Eigen::Vector3d down_dir(0, -thumb_height/6, 0);
+	Eigen::Vector3d upper_link(thumb_width/2, weld_height/6, 0);
+	Eigen::Vector3d upper_opp(-thumb_width/2, weld_height/6, 0);
+	Eigen::Vector3d upper_dir(0, thumb_height/6, 0);
+	Eigen::Vector3d null_dir(0,0,0);
+
+	down_dir.normalize();
+	upper_dir.normalize();
+
+	std::size_t i;
+	for(i = 0 ; i < 3; ++i){
+		fingerTendon[2 * i + 8*4].second-> AddAnchor(bn, upper_link, upper_dir, null_dir, false);
+		fingerTendon[2 * i+1 + 8*4].second-> AddAnchor(bn, upper_opp, upper_dir, null_dir, false);
+		if(i == 0) {
+			upper_link = Eigen::Vector3d(thumb_width/2, thumb_height/6, 0);
+			upper_opp = Eigen::Vector3d(-thumb_width/2, thumb_height/6, 0);
+		}
+		bn = bn->getChildBodyNode(0);
+		fingerTendon[2 * i + 8*4].second-> AddAnchor(bn, down_link, null_dir, down_dir, false);
+		fingerTendon[2 * i + 1 + 8*4].second-> AddAnchor(bn, down_opp, null_dir, down_dir, false);
+	}
+
+	tendonName = "thumb tendon axial ";
+	bn = hand->getBodyNode(currName);
+	fingerTendon.push_back(std::make_pair(4, new Tendon(tendonName + "ant")));
+	fingerTendon.push_back(std::make_pair(4, new Tendon(tendonName + "pos")));
+
+	down_link = Eigen::Vector3d(0, -thumb_height/6, thumb_width/2);
+	down_opp = Eigen::Vector3d(0, -thumb_height/6, -thumb_width/2);
+	upper_link = Eigen::Vector3d(0, weld_height/6, thumb_width/2);
+	upper_opp = Eigen::Vector3d(0, weld_height/6, -thumb_width/2);
+
+
+	fingerTendon[2 * i + 8*4].second-> AddAnchor(bn, upper_link, upper_dir, null_dir, false);
+	fingerTendon[2 * i+1 + 8*4].second-> AddAnchor(bn, upper_opp, upper_dir, null_dir, false);
+	bn = bn->getChildBodyNode(0);
+	fingerTendon[2 * i + 8*4].second-> AddAnchor(bn, down_link, null_dir, down_dir, false);
+	fingerTendon[2 * i+1 + 8*4].second-> AddAnchor(bn, down_opp, null_dir, down_dir, false);
+
 }

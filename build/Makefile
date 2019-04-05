@@ -177,6 +177,33 @@ HandMaker.cpp.s:
 	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/HandMaker.cpp.s
 .PHONY : HandMaker.cpp.s
 
+IkSolver.o: IkSolver.cpp.o
+
+.PHONY : IkSolver.o
+
+# target to build an object file
+IkSolver.cpp.o:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/IkSolver.cpp.o
+.PHONY : IkSolver.cpp.o
+
+IkSolver.i: IkSolver.cpp.i
+
+.PHONY : IkSolver.i
+
+# target to preprocess a source file
+IkSolver.cpp.i:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/IkSolver.cpp.i
+.PHONY : IkSolver.cpp.i
+
+IkSolver.s: IkSolver.cpp.s
+
+.PHONY : IkSolver.s
+
+# target to generate assembly for a file
+IkSolver.cpp.s:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/IkSolver.cpp.s
+.PHONY : IkSolver.cpp.s
+
 MyWindow.o: MyWindow.cpp.o
 
 .PHONY : MyWindow.o
@@ -300,6 +327,9 @@ help:
 	@echo "... HandMaker.o"
 	@echo "... HandMaker.i"
 	@echo "... HandMaker.s"
+	@echo "... IkSolver.o"
+	@echo "... IkSolver.i"
+	@echo "... IkSolver.s"
 	@echo "... MyWindow.o"
 	@echo "... MyWindow.i"
 	@echo "... MyWindow.s"

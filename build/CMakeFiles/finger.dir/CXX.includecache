@@ -52,6 +52,22 @@ SkelParser.hpp
 Tendon.hpp
 /home/mrl/dart/tutorials/finger/Tendon.hpp
 
+/home/mrl/dart/tutorials/finger/IkSolver.cpp
+IkSolver.hpp
+/home/mrl/dart/tutorials/finger/IkSolver.hpp
+iostream
+-
+
+/home/mrl/dart/tutorials/finger/IkSolver.hpp
+iostream
+-
+dart/dart.hpp
+-
+dart/gui/gui.hpp
+-
+dart/utils/utils.hpp
+-
+
 /home/mrl/dart/tutorials/finger/MyWindow.cpp
 MyWindow.hpp
 /home/mrl/dart/tutorials/finger/MyWindow.hpp
@@ -77,6 +93,8 @@ Controller.hpp
 /home/mrl/dart/tutorials/finger/Controller.hpp
 HandMaker.hpp
 /home/mrl/dart/tutorials/finger/HandMaker.hpp
+IkSolver.hpp
+/home/mrl/dart/tutorials/finger/IkSolver.hpp
 
 /home/mrl/dart/tutorials/finger/SkelParser.cpp
 iostream

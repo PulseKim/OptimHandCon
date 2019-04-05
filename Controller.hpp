@@ -13,7 +13,7 @@ using namespace dart::math;
 
 const double tendon_angle = 30.0;
 
-enum {JOINT_F=0, LINK_F};
+enum {JOINT_F=0, HAND};
 
 class Controller{
 public:

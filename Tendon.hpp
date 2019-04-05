@@ -38,7 +38,7 @@ public:
 	int num_related_dofs;
 	std::vector<int> related_dof_indices;
 	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> currForces;
-
+	double mForce;
 };
 
 

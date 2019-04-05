@@ -6,6 +6,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/mrl/dart/tutorials/finger/Controller.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/Controller.cpp.o"
   "/home/mrl/dart/tutorials/finger/HandMaker.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/HandMaker.cpp.o"
+  "/home/mrl/dart/tutorials/finger/IkSolver.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/IkSolver.cpp.o"
   "/home/mrl/dart/tutorials/finger/MyWindow.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/MyWindow.cpp.o"
   "/home/mrl/dart/tutorials/finger/SkelParser.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/SkelParser.cpp.o"
   "/home/mrl/dart/tutorials/finger/Tendon.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/Tendon.cpp.o"
