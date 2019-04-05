@@ -14,7 +14,6 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 	mPalm = makePalm(hand);
 	makeFingers(hand);
 	makeThumb(hand);
-	mSkel.setGeometry(hand, "ball0", 20.0, 2);
 	mSkel.setGeometry(hand, "thumb_ball", 45.0, 0);
 	mSkel.setGeometry(hand, "thumb_ball", -30.0, 1);
 	mSkel.setGeometry(hand, "thumb_ball", 20.0, 2);

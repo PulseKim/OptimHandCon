@@ -17,7 +17,7 @@ using namespace dart::math;
 const int default_countdown = 100;
 const int default_countdown_movement = 1000;
 const double default_force = 500.0;
-const int grad_Iter = 500;
+const int grad_Iter = 3000;
 
 
 class MyWindow : public SimWindow

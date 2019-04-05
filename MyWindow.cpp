@@ -28,7 +28,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 		mWorld->getSkeleton("hand"),tempTendon, JOINT_F);
 
 	targetMovement();
-
+	setTarget();
 	// ik.IKSingleConfig(temporal, hand, 1);
 
 	// initSkeletonFinger();    
@@ -42,10 +42,10 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 }
 
 void MyWindow::setTarget(){
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[2]) ,3));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[2]) ,2));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[2]) ,1));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[0]-2.9, 5.5, hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[2]) ,0));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[2]) ,3));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[2]) ,2));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[2]) ,1));
+	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[2]) ,0));
 }
 
 void MyWindow::initSkeleton(){
@@ -196,7 +196,6 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 		MyWindow::showTorque();
 		break;
 		case 'x':
-		setTarget();
 		mIKCountDown = grad_Iter;
 		// MyWindow::basicMovement();
 		// controlBit = !controlBit;
@@ -215,7 +214,12 @@ void MyWindow::timeStepping()
 	
 	if(mIKCountDown > 0){
 		IkSolver ik;
-		mController->setTargetPosition(ik.TotalIk(Ends, hand));
+		Eigen::VectorXd newPose = hand->getPositions();
+		for(int i =0 ; i < Ends.size(); ++i){
+			newPose += ik.IKSingleConfig(Ends[i].first, hand, Ends[i].second);
+			mController->setTargetPosition(newPose);
+		}		
+		// mController->setTargetPosition(ik.TotalIk(Ends, hand));
 		--mIKCountDown;
 	}
 
