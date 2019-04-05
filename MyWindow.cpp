@@ -13,6 +13,9 @@ using namespace dart::math;
 bool controlBit = false;
 int mIKCountDown = 0;
 
+std::vector<Eigen::Vector3d> point;
+
+
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 {	
@@ -42,10 +45,11 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 }
 
 void MyWindow::setTarget(){
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(3))->getCOM()[2]) ,3));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(2))->getCOM()[2]) ,2));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(1))->getCOM()[2]) ,1));
-	Ends.push_back(std::make_pair(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(0))->getCOM()[2]) ,0));
+
+	for(int i = 0; i < 4 ; ++i){
+		point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.5, 5.5, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
+		Ends.push_back(std::make_pair(point[i] ,i));
+	}
 }
 
 void MyWindow::initSkeleton(){
@@ -388,6 +392,14 @@ void MyWindow::draw()
 	glEnable(GL_LIGHTING);
 	drawWorld();
 	glDisable(GL_LIGHTING);
+
+	glColor3f(1.0, 0.0, 0.0); 
+	glLineWidth(8.0); 
+	glBegin(GL_LINE_STRIP);
+	for(int i = 0; i < 4; ++i)
+		glVertex3f(point[i][0], point[i][1], point[i][2]);
+	glEnd();
+
 	// drawMultipleTendons();
 	// drawTendon();
 	glEnable(GL_LIGHTING);
