@@ -24,8 +24,13 @@ Eigen::VectorXd IkSolver::IKSingleConfig(const Eigen::Vector3d endEff, const Ske
 	// Eigen::MatrixXd J = hand->getLinearJacobian(currentFinger, rootFinger);
 	Eigen::MatrixXd J = hand->getLinearJacobian(currentFinger);
 
-	for(int i=0 ; i < 4 ; ++i)
+	// for(int i=0 ; i < 6 ; ++i){
+	// 		J.col(i) = Eigen::Vector3d(0, 0, 0);
+	// }
+	for(int i=0 ; i < 4 ; ++i){
 		J.col(5 * i + 7) = Eigen::Vector3d(0, 0, 0);
+		//J.col(5 * i + 6) = Eigen::Vector3d(0, 0, 0);
+	}
 
 	
 	Eigen::MatrixXd pseudoJ = J.transpose() * (J*J.transpose()).inverse();
