@@ -22,6 +22,7 @@ public:
   ~SkelParser();
   
   void makeFloor(const SkeletonPtr& floor, const std::string& name);
+  void makeBall(const SkeletonPtr& floor);
   void makeFinger(const SkeletonPtr& skel);
   void setGeometry(const SkeletonPtr& skel, const std::string& name, int degree, int dof);
 

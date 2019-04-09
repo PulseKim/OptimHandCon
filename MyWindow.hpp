@@ -17,7 +17,7 @@ using namespace dart::math;
 const int default_countdown = 100;
 const int default_countdown_movement = 1000;
 const double default_force = 500.0;
-const int grad_Iter = 3000;
+
 
 
 class MyWindow : public SimWindow
@@ -58,6 +58,8 @@ public:
 
   void setTarget();
 
+  void setPretarget();
+
 protected:
 	int mForceCountDown;
   int mPoseCountDown;
@@ -66,6 +68,7 @@ protected:
   SkeletonPtr finger;
   SkeletonPtr floor;
   SkeletonPtr hand;
+  SkeletonPtr ball;
   std::vector<Tendon*> mTendon;
   std::vector<std::pair<int, Tendon*>> mFingerTendon;
   Eigen::VectorXd defaultPose;

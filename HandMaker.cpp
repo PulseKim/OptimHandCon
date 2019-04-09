@@ -15,8 +15,9 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 	mPalm = makePalm(hand, arm);
 	makeFingers(hand);
 	makeThumb(hand);
-	mSkel.setGeometry(hand, "thumb_univ", 45.0, 0);
-	mSkel.setGeometry(hand, "thumb_univ", 30.0, 1);
+	mSkel.setGeometry(hand, "thumb_ball", 50.0, 0);
+	mSkel.setGeometry(hand, "thumb_ball", -30.0, 1);
+	mSkel.setGeometry(hand, "thumb_ball", 30.0, 2);
 
 	for(std::size_t i = 0; i < hand->getNumJoints(); ++i)
 		hand->getJoint(i)->setPositionLimitEnforced(true);
@@ -58,7 +59,7 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 	std::string name = "weld" + std::to_string(idx);	
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, finger_width, 0.0, palm_height/2, x_off);
 	name = "univ" + std::to_string(idx);	
-	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),20, -20, 100, 0);
+	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),30, -30, 100, 0);
 	name = "revol_down" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
 	name = "revol_up" + std::to_string(idx);
@@ -71,8 +72,8 @@ void HandMaker::makeThumb(const SkeletonPtr& hand)
 {
 	std::string name = "thumb_weld";
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, thumb_width, 0.0, -thumb_height, palm_width/2);
-	name = "thumb_univ";
-	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),20, -20, 100, 0);
+	name = "thumb_ball";
+	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, 40, -40, 30, -30, 100, 0);
 	name = "thumb_revol_down";
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
 	name = "thumb_revol_up";

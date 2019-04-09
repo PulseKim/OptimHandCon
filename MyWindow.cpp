@@ -12,9 +12,10 @@ using namespace dart::math;
 
 bool controlBit = false;
 int mIKCountDown = 0;
+int mPreCountDown = 0;
 
 std::vector<Eigen::Vector3d> point;
-
+Eigen::Vector3d pretarget;
 
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
@@ -31,6 +32,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 		mWorld->getSkeleton("hand"),tempTendon, JOINT_F);
 
 	targetMovement();
+	setPretarget();
 	setTarget();
 
 	// ik.IKSingleConfig(temporal, hand, 1);
@@ -40,15 +42,33 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 	// controlBit = true;
 	// defaultPose = finger->getPositions();
 	// mController = dart::common::make_unique<Controller>(
-	// 	mWorld->getSkeleton("finger"),mTendon, JOINT_F);
-	
-	
+	// 	mWorld->getSkeleton("finger"),mTendon, JOINT_F);	
+}
+
+
+void MyWindow::setPretarget(){
+	Eigen::Vector3d cylPose = ball->getCOM();
+	pretarget[0] = cylPose[0]+ 0.3;
+	pretarget[1] = cylPose[1]+ 5.5;
+	pretarget[2] = cylPose[2];
 }
 
 void MyWindow::setTarget(){
+	// for(int i = 0; i < 4 ; ++i){
+	// 	point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.0-i*0.3, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[1]-1.0-0.2*i, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
+	// 	Ends.push_back(std::make_pair(point[i] ,i));
+	// 	//std::cout<<point[i] <<std::endl;
+	// }
+	// point.push_back(Eigen::Vector3d(hand->getBodyNode("thumb_revol_up")->getCOM()[0]-1.0,hand->getBodyNode("thumb_revol_up")->getCOM()[1]-0.5, hand->getBodyNode("thumb_revol_up")->getCOM()[2]));
+	// Ends.push_back(std::make_pair(point[4],4));
 
-	for(int i = 0; i < 4 ; ++i){
-		point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.0-i*0.3, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[1]-1.0-0.2*i, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
+	Eigen::Vector3d cylPose = ball->getCOM();
+	double pointy = cylPose[1] + 1.2;
+	double theta = 60.0 * M_PI /180.0;
+	double offset = -10.0* M_PI /180.0;
+	int i;
+	for(i = 0; i < 5; ++i){
+		point.push_back(Eigen::Vector3d(cylPose[0]-1.4*sin(theta*i+offset), pointy, cylPose[2] - 1.4*cos(theta*i+offset)));
 		Ends.push_back(std::make_pair(point[i] ,i));
 	}
 }
@@ -56,9 +76,17 @@ void MyWindow::setTarget(){
 void MyWindow::initSkeleton(){
 	floor  = Skeleton::create("floor");
 	hand = Skeleton::create("hand");
+	ball = Skeleton::create("ball");
 
 	SkelParser skelP;
 	skelP.makeFloor(floor, "floor");
+	skelP.makeBall(ball);
+
+	ball->setPosition(0, 90.0* M_PI /180);
+	ball->setPosition(3, -0);
+	ball->setPosition(4, 2.1);
+	ball->setPosition(5, -2.0);
+	ball->getBodyNode(0)->setFrictionCoeff(5.0);
 
 	HandMaker handMaker;
 	handMaker.makeHand(hand);
@@ -68,6 +96,7 @@ void MyWindow::initSkeleton(){
 
 	mWorld->addSkeleton(floor);
 	mWorld->addSkeleton(hand);
+	mWorld->addSkeleton(ball);
 }
 
 
@@ -188,6 +217,7 @@ void MyWindow::showTorque()
   /// Handle keyboard input
 void MyWindow::keyboard(unsigned char key, int x, int y)
 {
+	Eigen::VectorXd pose;
 	switch(key)
 	{
 		case 'q':
@@ -198,10 +228,12 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 		controlBit = !controlBit;
 		break;
 		case 'z':
-		MyWindow::showTorque();
+		pose = hand->getPositions();
+		pose[2] -= 20 * M_PI / 180;
+		mController->setTargetPosition(pose);
 		break;
 		case 'x':
-		mIKCountDown = grad_Iter;
+		mPreCountDown = 5000;
 		// MyWindow::basicMovement();
 		// controlBit = !controlBit;
 		break;
@@ -217,13 +249,20 @@ void MyWindow::timeStepping()
 	mController->addSPDForces();
 	// mController->addSPDTendonDirectionForces();
 	
-	if(mIKCountDown > 0){
+	if(mPreCountDown>0){
 		IkSolver ik;
 		Eigen::VectorXd newPose = hand->getPositions();
-		for(int i =0 ; i < Ends.size(); ++i){
-			newPose += ik.IKSingleConfig(Ends[i].first, hand, Ends[i].second);
-			mController->setTargetPosition(newPose);
-		}		
+		newPose+= ik.IKMiddle(pretarget, hand, "palm");
+		mController->setTargetPosition(newPose);
+		--mPreCountDown;
+		if(mPreCountDown == 0) mIKCountDown = grad_Iter;
+	}
+
+	if(mIKCountDown > 0){
+		IkSolver ik;
+		Eigen::VectorXd newPose = hand->getPositions();		
+		newPose += ik.IKMultiple(hand, Ends, mIKCountDown);
+		mController->setTargetPosition(newPose);
 		// mController->setTargetPosition(ik.TotalIk(Ends, hand));
 		--mIKCountDown;
 	}
@@ -397,7 +436,7 @@ void MyWindow::draw()
 	glColor3f(1.0, 0.0, 0.0); 
 	glLineWidth(8.0); 
 	glBegin(GL_LINE_STRIP);
-	for(int i = 0; i < 4; ++i)
+	for(int i = 0; i < Ends.size(); ++i)
 		glVertex3f(point[i][0], point[i][1], point[i][2]);
 	glEnd();
 

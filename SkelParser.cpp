@@ -39,6 +39,31 @@ void SkelParser::makeFloor(const SkeletonPtr& floor, const std::string& name){
 	bn->setInertia(inertia);	
 }
 
+void SkelParser::makeBall(const SkeletonPtr& floor){
+ 	//Shape
+	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.5, 4.0));
+	//Inertia
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+
+	//Joint Parsing
+	BodyNode* bn;
+	FreeJoint::Properties props;
+	props.mName = "ball";
+	Eigen::Isometry3d T;
+	T.setIdentity();	
+	T.translation() = Eigen::Vector3d(5.0,-2.0,0.0);
+	props.mT_ChildBodyToJoint = T;
+	bn = floor->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("ball")).second;
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	auto visualShapenodes = bn->getShapeNodesWith<VisualAspect>();
+	visualShapenodes[0]->getVisualAspect()->setColor(dart::Color::Orange());
+	bn->setInertia(inertia);	;
+}
+
+
 void SkelParser::makeFinger(const SkeletonPtr& skel){
 	BodyNode* bn = SkelParser::makeRoot(skel, "L1");
 	bn = SkelParser::makeBallJoint(skel, bn,"L2");
