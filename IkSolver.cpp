@@ -21,18 +21,12 @@ Eigen::VectorXd IkSolver::IKSingleConfig(const Eigen::Vector3d endEff, const Ske
 	BodyNode* currentFinger = hand->getBodyNode("revol_up" + std::to_string(idx));
 	Eigen::Vector3d deviation = endEff- currentFinger->getCOM();
 
-	// Eigen::MatrixXd J = hand->getLinearJacobian(currentFinger, rootFinger);
 	Eigen::MatrixXd J = hand->getLinearJacobian(currentFinger);
 
-	// for(int i=0 ; i < 6 ; ++i){
-	// 		J.col(i) = Eigen::Vector3d(0, 0, 0);
-	// }
-	for(int i=0 ; i < 4 ; ++i){
-		J.col(5 * i + 7) = Eigen::Vector3d(0, 0, 0);
-		//J.col(5 * i + 6) = Eigen::Vector3d(0, 0, 0);
+	for(int i = 0; i <4 ; ++i){
+		
 	}
 
-	
 	Eigen::MatrixXd pseudoJ = J.transpose() * (J*J.transpose()).inverse();
 	//std::cout << pseudoJ * deviation << std::endl;
 	Eigen::VectorXd newPose = pseudoJ * deviation;

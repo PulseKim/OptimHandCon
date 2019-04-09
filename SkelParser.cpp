@@ -17,7 +17,7 @@ SkelParser::~SkelParser(){}
 
 void SkelParser::makeFloor(const SkeletonPtr& floor, const std::string& name){
  	//Shape
-	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(20.0,0.5,20.0)));
+	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(50.0,0.5,50.0)));
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
@@ -72,38 +72,6 @@ BodyNode* SkelParser::makeRoot(const SkeletonPtr& skel, const std::string& name)
 	return bn;
 }
 
-BodyNode* SkelParser::makeWeldJoint (const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
-	double width, double length, double z_len, double x_offset, double y_offset, double z_offset)
-{
-	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
-	double mass = default_mass;
-	dart::dynamics::Inertia inertia;
-	inertia.setMass(mass);
-	inertia.setMoment(shape->computeInertia(mass));
-	BodyNode* bn;
-	WeldJoint::Properties props;
-	props.mName = name;
-
-	Eigen::Isometry3d T1;
-	Eigen::Isometry3d T2;
-
-	T1.setIdentity();
-	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
-
-	T2.setIdentity();
-	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
-
-	props.mT_ChildBodyToJoint = T1;
-	props.mT_ParentBodyToJoint = T2;
-
-	bn = skel->createJointAndBodyNodePair<WeldJoint>(
-		parent,props,BodyNode::AspectProperties(name)).second;
-
-	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
-	bn->setInertia(inertia);	
-	return bn;
-}
-
 BodyNode* SkelParser::makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name){
 	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(default_width, default_link_len, default_width)));
 	double mass = default_mass;
@@ -137,42 +105,6 @@ BodyNode* SkelParser::makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, c
 }
 
 
-BodyNode* SkelParser::makeBallJoint
-(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
-	double width, double length, double z_len, double x_offset, double y_offset, double z_offset)
-{
-	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
-	double mass = default_mass;
-	dart::dynamics::Inertia inertia;
-	inertia.setMass(mass);
-	inertia.setMoment(shape->computeInertia(mass));
-	BodyNode* bn;
-	BallJoint::Properties props;
-	props.mName = name;
-	props.mDampingCoefficients = Eigen::Vector3d::Constant(0.4);
-	// props.mPositionLowerLimits[0] = -30.0;
-	// props.mPositionUpperLimits[0] = 25.0;
-	// props.mPositionLowerLimits[1] = -0.0;
-	// props.mPositionUpperLimits[1] = 0.0;
-	Eigen::Isometry3d T1;
-	Eigen::Isometry3d T2;
-
-	T1.setIdentity();
-	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
-
-	T2.setIdentity();
-	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
-
-	props.mT_ChildBodyToJoint = T1;
-	props.mT_ParentBodyToJoint = T2;
-
-	bn = skel->createJointAndBodyNodePair<BallJoint>(
-		parent, props, BodyNode::AspectProperties(name)).second;
-
-	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
-	bn->setInertia(inertia);
-	return bn;
-}
 
 BodyNode* SkelParser::makeRevoluteJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name){
 	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(default_width, default_link_len, default_width)));
@@ -203,9 +135,83 @@ BodyNode* SkelParser::makeRevoluteJoint(const SkeletonPtr& skel, BodyNode* paren
 }
 
 
+//Overloaded for hand making
+
+BodyNode* SkelParser::makeWeldJoint (const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+	double width, double length, double z_len, double x_offset, double y_offset, double z_offset)
+{
+	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+	BodyNode* bn;
+	WeldJoint::Properties props;
+	props.mName = name;
+
+	Eigen::Isometry3d T1;
+	Eigen::Isometry3d T2;
+
+	T1.setIdentity();
+	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
+
+	T2.setIdentity();
+	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
+
+	props.mT_ChildBodyToJoint = T1;
+	props.mT_ParentBodyToJoint = T2;
+
+	bn = skel->createJointAndBodyNodePair<WeldJoint>(
+		parent,props,BodyNode::AspectProperties(name)).second;
+
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	bn->setInertia(inertia);	
+	return bn;
+}
+
+
+BodyNode* SkelParser::makeBallJoint
+(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+	double width, double length, double z_len, double x_offset, double y_offset, double z_offset, double limit_upper_x, double limit_lower_x, double limit_upper_y, double limit_lower_y, double limit_upper_z, double limit_lower_z)
+{
+	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+	BodyNode* bn;
+	BallJoint::Properties props;
+	props.mName = name;
+	props.mDampingCoefficients = Eigen::Vector3d::Constant(0.4);
+	props.mPositionLowerLimits[0] = limit_lower_x * M_PI / 180.0;
+	props.mPositionUpperLimits[0] = limit_upper_x * M_PI / 180.0;
+	props.mPositionLowerLimits[1] = limit_lower_y * M_PI / 180.0;
+	props.mPositionUpperLimits[1] = limit_upper_y * M_PI / 180.0;
+	props.mPositionLowerLimits[2] = limit_lower_z * M_PI / 180.0;
+	props.mPositionUpperLimits[2] = limit_upper_z * M_PI / 180.0;
+
+	Eigen::Isometry3d T1;
+	Eigen::Isometry3d T2;
+	T1.setIdentity();
+	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
+	T2.setIdentity();
+	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
+
+	props.mT_ChildBodyToJoint = T1;
+	props.mT_ParentBodyToJoint = T2;
+
+	bn = skel->createJointAndBodyNodePair<BallJoint>(
+		parent, props, BodyNode::AspectProperties(name)).second;
+
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	bn->setInertia(inertia);
+	return bn;
+}
+
+
 BodyNode* SkelParser::makeRevoluteJoint
 (const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
-	double width, double length, double z_len, double x_offset, double y_offset, double z_offset)
+	double width, double length, double z_len, double x_offset, double y_offset, double z_offset, const Eigen::Vector3d axis, double limit_upper, double limit_lower)
 {
 	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
 	double mass = default_mass;
@@ -216,9 +222,9 @@ BodyNode* SkelParser::makeRevoluteJoint
 	BodyNode* bn;
 	RevoluteJoint::Properties props;
 	props.mName = name;
-	props.mAxis = Eigen::Vector3d::UnitZ();
-	props.mPositionLowerLimits[0] = 0.0;
-	props.mPositionUpperLimits[0] = 100.0 * M_PI / 180.0;
+	props.mAxis = axis;
+	props.mPositionLowerLimits[0] = limit_lower * M_PI / 180.0;
+	props.mPositionUpperLimits[0] = limit_upper * M_PI / 180.0;
 	Eigen::Isometry3d T1;
 	Eigen::Isometry3d T2;
 	T1.setIdentity();
@@ -234,3 +240,36 @@ BodyNode* SkelParser::makeRevoluteJoint
 	return bn;
 }
 
+BodyNode* SkelParser::makeUniversalJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+  double width, double length, double z_len, double x_offset, double y_offset, double z_offset, const Eigen::Vector3d axis1, const Eigen::Vector3d axis2, double limit_upper_1, double limit_lower_1, double limit_upper_2, double limit_lower_2)
+{
+	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+
+	BodyNode* bn;
+	UniversalJoint::Properties props;
+	props.mName = name;
+	props.mAxis[0] = axis1;
+	props.mAxis[1] = axis2;
+	props.mPositionLowerLimits[0] = limit_lower_1 * M_PI / 180.0;
+	props.mPositionUpperLimits[0] = limit_upper_1 * M_PI / 180.0;
+	props.mPositionLowerLimits[1] = limit_lower_2 * M_PI / 180.0;
+	props.mPositionUpperLimits[1] = limit_upper_2 * M_PI / 180.0;
+
+	Eigen::Isometry3d T1;
+	Eigen::Isometry3d T2;
+	T1.setIdentity();
+	T1.translation() = Eigen::Vector3d(0.0, -length/2,0.0);
+	T2.setIdentity();
+	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
+	props.mT_ChildBodyToJoint = T1;
+	props.mT_ParentBodyToJoint = T2;
+	bn = skel->createJointAndBodyNodePair<UniversalJoint>(
+		parent,props,BodyNode::AspectProperties(name)).second;
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	bn->setInertia(inertia);
+	return bn;
+}

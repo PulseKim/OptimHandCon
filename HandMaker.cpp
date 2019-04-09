@@ -11,12 +11,12 @@ HandMaker::~HandMaker(){}
 
 
 void HandMaker::makeHand(const SkeletonPtr& hand){
-	mPalm = makePalm(hand);
+	BodyNode* arm = makeArm(hand);
+	mPalm = makePalm(hand, arm);
 	makeFingers(hand);
 	makeThumb(hand);
-	mSkel.setGeometry(hand, "thumb_ball", 45.0, 0);
-	mSkel.setGeometry(hand, "thumb_ball", -30.0, 1);
-	mSkel.setGeometry(hand, "thumb_ball", 20.0, 2);
+	mSkel.setGeometry(hand, "thumb_univ", 45.0, 0);
+	mSkel.setGeometry(hand, "thumb_univ", 30.0, 1);
 
 	for(std::size_t i = 0; i < hand->getNumJoints(); ++i)
 		hand->getJoint(i)->setPositionLimitEnforced(true);
@@ -26,26 +26,26 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 	tendonThumb(hand);
 }
 
-BodyNode* HandMaker::makePalm(const SkeletonPtr& hand)
+
+BodyNode* HandMaker::makePalm(const SkeletonPtr& hand, BodyNode* arm)
 {
-	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(hand_z, palm_height, palm_width)));
-	double mass = default_mass;
-	dart::dynamics::Inertia inertia;
-	inertia.setMass(mass);
-	inertia.setMoment(shape->computeInertia(mass));
+	std::string name = "palm";
 	BodyNode* bn;
-	FreeJoint::Properties props;
-	Eigen::Isometry3d T;
-	T.setIdentity();
-	T.translation() = Eigen::Vector3d(0.0,palm_height/2,hand_offset);
-	props.mT_ParentBodyToJoint = T;
-	bn = hand->createJointAndBodyNodePair<FreeJoint>(
-		nullptr,props,BodyNode::AspectProperties("palm")).second;
-	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
-	bn->setInertia(inertia);
+	bn = mSkel.makeRevoluteJoint(hand, arm, name, hand_z, palm_height, palm_width, 0.0, arm_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90.0, -60.0);
 	return bn;	
 }
 
+
+BodyNode* HandMaker::makeArm(const SkeletonPtr& hand){
+	std::string name = "root";
+	BodyNode* bn = mSkel.makeWeldJoint(hand, nullptr, name, hand_z, weld_height, arm_width, 0.0, 0.0, 0.0);
+	name = "arm_ball";
+	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, arm_height, arm_width, 0.0, weld_height/2, 0.0, 180, -180, 180, -180, 180, -180);
+	name = "arm_univ";
+	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, arm_height, arm_width, 0.0, arm_height/2, 0.0, Eigen::Vector3d::UnitY(), Eigen::Vector3d::UnitZ(), 90.0, -90.0, 120.0, 0.0);
+	return bn;
+
+}
 void HandMaker::makeFingers(const SkeletonPtr& hand)
 {
 	for(int i = 0 ; i <4 ; ++i)
@@ -57,12 +57,12 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 	double x_off = -palm_width / 2 + finger_width / 2 + (finger_width + gap) * idx;;
 	std::string name = "weld" + std::to_string(idx);	
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, finger_width, 0.0, palm_height/2, x_off);
-	name = "ball" + std::to_string(idx);	
-	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0);
+	name = "univ" + std::to_string(idx);	
+	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),20, -20, 100, 0);
 	name = "revol_down" + std::to_string(idx);
-	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0);
+	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
 	name = "revol_up" + std::to_string(idx);
-	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0);
+	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
 
 }
 
@@ -71,12 +71,12 @@ void HandMaker::makeThumb(const SkeletonPtr& hand)
 {
 	std::string name = "thumb_weld";
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, thumb_width, 0.0, -thumb_height, palm_width/2);
-	name = "thumb_ball";
-	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0);
+	name = "thumb_univ";
+	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),20, -20, 100, 0);
 	name = "thumb_revol_down";
-	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0);
+	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
 	name = "thumb_revol_up";
-	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0);
+	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
 
 }
 

@@ -32,6 +32,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 
 	targetMovement();
 	setTarget();
+
 	// ik.IKSingleConfig(temporal, hand, 1);
 
 	// initSkeletonFinger();    
@@ -47,7 +48,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 void MyWindow::setTarget(){
 
 	for(int i = 0; i < 4 ; ++i){
-		point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.0, 5.5, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
+		point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.0-i*0.3, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[1]-1.0-0.2*i, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
 		Ends.push_back(std::make_pair(point[i] ,i));
 	}
 }

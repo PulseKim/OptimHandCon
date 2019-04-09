@@ -15,6 +15,8 @@ const double thumb_width = 0.7;
 const double thumb_height = 1.0;
 const double hand_z = 0.5;
 const double hand_offset = -2.0;
+const double arm_width = 2.0;
+const double arm_height =4.0;
 
 
 class HandMaker{
@@ -24,8 +26,9 @@ public:
 	~HandMaker();
 
 	void makeHand(const SkeletonPtr& hand);
+	BodyNode* makeArm(const SkeletonPtr& hand);
 	void  makeFingers(const SkeletonPtr& hand);
-	BodyNode* makePalm(const SkeletonPtr& hand);
+	BodyNode* makePalm(const SkeletonPtr& hand, BodyNode* arm);
 	void makeThumb(const SkeletonPtr& hand);
 	void makeSingleFinger(const SkeletonPtr& hand, int idx);
 	void tendonSingleFinger(const SkeletonPtr& hand, int idx);
