@@ -84,7 +84,8 @@ Eigen::VectorXd IkSolver::IKMultiple(const SkeletonPtr& hand, std::vector<std::p
 			for(int j = 0; j <4; ++j)
 				J.col(4*i+6+j) = J.col(4*i+6+j) * (2 * (grad_Iter-iter+2)/grad_Iter);
 		}
-		J.col(hand->getPositions().size()-1) = J.col(hand->getPositions().size()-1) * (2*(grad_Iter-iter+2)/grad_Iter);
+
+		J.col(hand->getPositions().size()-1) = J.col(hand->getPositions().size()-1) * (2.3*(grad_Iter-iter+2)/grad_Iter);
 
 		J_stack.block(J.rows()*i,0,J.rows(),J.cols()) = J;
 		dev_stack(3*i) = deviation[0];

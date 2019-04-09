@@ -68,7 +68,7 @@ void MyWindow::setTarget(){
 	double offset = -10.0* M_PI /180.0;
 	int i;
 	for(i = 0; i < 5; ++i){
-		point.push_back(Eigen::Vector3d(cylPose[0]-1.4*sin(theta*i+offset), pointy, cylPose[2] - 1.4*cos(theta*i+offset)));
+		point.push_back(Eigen::Vector3d(cylPose[0]-1.35*sin(theta*i+offset), pointy, cylPose[2] - 1.35*cos(theta*i+offset)));
 		Ends.push_back(std::make_pair(point[i] ,i));
 	}
 }
