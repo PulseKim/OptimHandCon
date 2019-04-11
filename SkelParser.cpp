@@ -8,7 +8,6 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::simulation;
 using namespace dart::gui;
-using namespace dart::gui::glut;
 using namespace dart::math;
 
 SkelParser::SkelParser(){}
@@ -39,9 +38,9 @@ void SkelParser::makeFloor(const SkeletonPtr& floor, const std::string& name){
 	bn->setInertia(inertia);	
 }
 
-void SkelParser::makeBall(const SkeletonPtr& floor){
- 	//Shape
-	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.5, 4.0));
+void SkelParser::makeBall(const SkeletonPtr& ball)
+{
+	ShapePtr shape = std::shared_ptr<EllipsoidShape>(new EllipsoidShape(Eigen::Vector3d(4.0,4.0,4.0)));
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
@@ -54,13 +53,46 @@ void SkelParser::makeBall(const SkeletonPtr& floor){
 	props.mName = "ball";
 	Eigen::Isometry3d T;
 	T.setIdentity();	
-	T.translation() = Eigen::Vector3d(5.0,-2.0,0.0);
+	T.translation() = Eigen::Vector3d(0.0,-2.5,0.0);
 	props.mT_ChildBodyToJoint = T;
-	bn = floor->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("ball")).second;
+	bn = ball->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("cylinder")).second;
 	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
 	auto visualShapenodes = bn->getShapeNodesWith<VisualAspect>();
 	visualShapenodes[0]->getVisualAspect()->setColor(dart::Color::Orange());
-	bn->setInertia(inertia);	;
+	bn->setInertia(inertia);
+	bn->setFrictionCoeff(5.0);
+}
+
+
+void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
+{
+ 	//Shape
+	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.5, 4.0));
+	//Inertia
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+
+	//Joint Parsing
+	BodyNode* bn;
+	FreeJoint::Properties props;
+	props.mName = "cylinder";
+	Eigen::Isometry3d T;
+	T.setIdentity();	
+	T.translation() = Eigen::Vector3d(5.0,-2.0,0.0);
+	props.mT_ChildBodyToJoint = T;
+	bn = cylinder->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("cylinder")).second;
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	auto visualShapenodes = bn->getShapeNodesWith<VisualAspect>();
+	visualShapenodes[0]->getVisualAspect()->setColor(dart::Color::Orange());
+	bn->setInertia(inertia);
+
+	cylinder->setPosition(0, 90.0* M_PI /180);
+	cylinder->setPosition(3, -0);
+	cylinder->setPosition(4, 2.1);
+	cylinder->setPosition(5, -2.0);
+	bn->setFrictionCoeff(5.0);
 }
 
 
@@ -107,10 +139,10 @@ BodyNode* SkelParser::makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, c
 	BallJoint::Properties props;
 	props.mName = name;
 	props.mDampingCoefficients = Eigen::Vector3d::Constant(0.4);
-	props.mPositionLowerLimits[0] = -30.0;
-	props.mPositionUpperLimits[0] = 25.0;
-	props.mPositionLowerLimits[1] = -0.0;
-	props.mPositionUpperLimits[1] = 0.0;
+	props.mPositionLowerLimits[0] = -30.0* M_PI / 180.0;
+	props.mPositionUpperLimits[0] = 25.0* M_PI / 180.0;
+	props.mPositionLowerLimits[1] = -0.0* M_PI / 180.0;
+	props.mPositionUpperLimits[1] = 0.0* M_PI / 180.0;
 	Eigen::Isometry3d T1;
 	Eigen::Isometry3d T2;
 	T1.setIdentity();

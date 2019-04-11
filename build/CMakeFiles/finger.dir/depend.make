@@ -3,6 +3,7 @@
 
 CMakeFiles/finger.dir/Controller.cpp.o: ../Controller.cpp
 CMakeFiles/finger.dir/Controller.cpp.o: ../Controller.hpp
+CMakeFiles/finger.dir/Controller.cpp.o: ../IkSolver.hpp
 CMakeFiles/finger.dir/Controller.cpp.o: ../Tendon.hpp
 CMakeFiles/finger.dir/Controller.cpp.o: /usr/include/eigen3/Eigen/Cholesky
 CMakeFiles/finger.dir/Controller.cpp.o: /usr/include/eigen3/Eigen/Core

@@ -7,7 +7,6 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::simulation;
 using namespace dart::gui;
-using namespace dart::gui::glut;
 using namespace dart::math;
 
 const double default_link_len = 2.0;
@@ -23,11 +22,13 @@ public:
   
   void makeFloor(const SkeletonPtr& floor, const std::string& name);
   void makeBall(const SkeletonPtr& floor);
+  void makeCylinder(const SkeletonPtr& cylinder);
   void makeFinger(const SkeletonPtr& skel);
   void setGeometry(const SkeletonPtr& skel, const std::string& name, int degree, int dof);
 
   BodyNode* makeRoot(const SkeletonPtr& skel, const std::string& name);
   BodyNode* makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name);
+
 
   BodyNode* makeRevoluteJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name);
 

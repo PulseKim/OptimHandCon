@@ -3,12 +3,12 @@
 #include <dart/gui/gui.hpp>
 #include <dart/utils/utils.hpp>
 #include "Tendon.hpp"
+#include "IkSolver.hpp"
 
 using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::simulation;
 using namespace dart::gui;
-using namespace dart::gui::glut;
 using namespace dart::math;
 
 const double tendon_angle = 30.0;

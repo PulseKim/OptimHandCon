@@ -7,7 +7,6 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::simulation;
 using namespace dart::gui;
-using namespace dart::gui::glut;
 using namespace dart::math;
 
 bool controlBit = false;
@@ -64,8 +63,8 @@ void MyWindow::setTarget(){
 
 	Eigen::Vector3d cylPose = ball->getCOM();
 	double pointy = cylPose[1] + 1.2;
-	double theta = 60.0 * M_PI /180.0;
-	double offset = -10.0* M_PI /180.0;
+	double theta = radian(60);
+	double offset = radian(-10);
 	int i;
 	for(i = 0; i < 5; ++i){
 		point.push_back(Eigen::Vector3d(cylPose[0]-1.35*sin(theta*i+offset), pointy, cylPose[2] - 1.35*cos(theta*i+offset)));
@@ -81,22 +80,24 @@ void MyWindow::initSkeleton(){
 	SkelParser skelP;
 	skelP.makeFloor(floor, "floor");
 	skelP.makeBall(ball);
-
-	ball->setPosition(0, 90.0* M_PI /180);
-	ball->setPosition(3, -0);
-	ball->setPosition(4, 2.1);
-	ball->setPosition(5, -2.0);
-	ball->getBodyNode(0)->setFrictionCoeff(5.0);
+	// skelP.makeCylinder(ball);
 
 	HandMaker handMaker;
 	handMaker.makeHand(hand);
 
 	mFingerTendon = handMaker.fingerTendon;
-	//std::cout << mFingerTendon.size() << std::endl;
 
-	mWorld->addSkeleton(floor);
+	//mWorld->addSkeleton(floor);
 	mWorld->addSkeleton(hand);
 	mWorld->addSkeleton(ball);
+	poseSetter();
+}
+
+void MyWindow::poseSetter(){
+	Eigen::VectorXd pose = hand->getPositions();
+	pose[2] = radian(-90);
+	hand->setPositions(pose);
+	ball->setPosition(3, hand->getBodyNode("palm")->getCOM()[0] + 1.0);
 }
 
 
@@ -250,10 +251,12 @@ void MyWindow::timeStepping()
 	// mController->addSPDTendonDirectionForces();
 	
 	if(mPreCountDown>0){
+
 		IkSolver ik;
 		Eigen::VectorXd newPose = hand->getPositions();
 		newPose+= ik.IKMiddle(pretarget, hand, "palm");
 		mController->setTargetPosition(newPose);
+
 		--mPreCountDown;
 		if(mPreCountDown == 0) mIKCountDown = grad_Iter;
 	}
@@ -374,6 +377,14 @@ Eigen::Vector3d MyWindow::getMidPoint(Eigen::Vector3d first, Eigen::Vector3d sec
 	return midpoint;
 }
 
+void MyWindow::drawTarget(){
+	glColor3f(1.0, 0.0, 0.0); 
+	glLineWidth(8.0); 
+	glBegin(GL_LINE_STRIP);
+	for(int i = 0; i < Ends.size(); ++i)
+		glVertex3f(point[i][0], point[i][1], point[i][2]);
+	glEnd();
+}
 
 
 void MyWindow::draw() 
@@ -433,13 +444,7 @@ void MyWindow::draw()
 	drawWorld();
 	glDisable(GL_LIGHTING);
 
-	glColor3f(1.0, 0.0, 0.0); 
-	glLineWidth(8.0); 
-	glBegin(GL_LINE_STRIP);
-	for(int i = 0; i < Ends.size(); ++i)
-		glVertex3f(point[i][0], point[i][1], point[i][2]);
-	glEnd();
-
+	// drawTarget();
 	// drawMultipleTendons();
 	// drawTendon();
 	glEnable(GL_LIGHTING);

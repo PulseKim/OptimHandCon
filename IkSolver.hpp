@@ -14,4 +14,6 @@ public:
 	Eigen::VectorXd TotalIk(std::vector<std::pair<Eigen::Vector3d, int>> Ends, const SkeletonPtr&hand);
 	Eigen::VectorXd IKMultiple(const SkeletonPtr& hand, std::vector<std::pair<Eigen::Vector3d, int>> Ends, int iter);
 	Eigen::VectorXd IKMiddle(const Eigen::Vector3d target, const SkeletonPtr& hand, std::string name);
+	Eigen::VectorXd IKFingerOnly(const SkeletonPtr& hand, std::vector<std::pair<Eigen::Vector3d, int>> Ends, int iter);
+
 };

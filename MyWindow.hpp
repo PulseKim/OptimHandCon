@@ -4,8 +4,6 @@
 #include <dart/utils/utils.hpp>
 #include "Controller.hpp"
 #include "HandMaker.hpp"
-#include "IkSolver.hpp"
-
 
 using namespace dart::common;
 using namespace dart::dynamics;
@@ -31,6 +29,9 @@ public:
   void initTendon();
 
   void initSkeletonFinger();
+
+  void poseSetter();
+
   void initTendonFinger();
 
   void basicMovement();
@@ -49,6 +50,8 @@ public:
   Eigen::Vector3d getMidPoint(Eigen::Vector3d first, Eigen::Vector3d second, Eigen::Vector3d first_dir, Eigen::Vector3d second_dir);
 
   void drawMultipleTendons();
+
+  void drawTarget();
 
   void draw() override;
 

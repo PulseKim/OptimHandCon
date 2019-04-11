@@ -4,6 +4,7 @@
 CMakeFiles/finger.dir/Controller.cpp.o
  /home/mrl/dart/tutorials/finger/Controller.cpp
  /home/mrl/dart/tutorials/finger/Controller.hpp
+ /home/mrl/dart/tutorials/finger/IkSolver.hpp
  /home/mrl/dart/tutorials/finger/Tendon.hpp
  /usr/include/eigen3/Eigen/Cholesky
  /usr/include/eigen3/Eigen/Core

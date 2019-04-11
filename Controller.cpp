@@ -8,7 +8,7 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::math;
 
-const double mag_Kp = 400;
+const double mag_Kp = 500;
 const double mag_Kd = 2 * std::sqrt(mag_Kp);
 int count = 5;
 
@@ -39,7 +39,6 @@ void Controller::jointControlSetter(){
 }
 
 void Controller::setTargetPosition(const Eigen::VectorXd& pose){
-    //std::cout << pose.size() << std::endl;
 	mTargetPositions = pose;
 }
 
@@ -64,9 +63,6 @@ void Controller::addSPDForces(){
 	Eigen::VectorXd q = mFinger->getPositions();
     Eigen::VectorXd dq = mFinger->getVelocities();
 
-    //std::cout << "This" <<std::endl;
-    //std::cout << q << std::endl;
-
     Eigen::MatrixXd invM = (mFinger->getMassMatrix()
         + mKd * mFinger->getTimeStep()).inverse();
     Eigen::VectorXd p =
@@ -78,12 +74,6 @@ void Controller::addSPDForces(){
     
     mForces += p + d - mKd * qddot * mFinger->getTimeStep();
     mFinger->setForces(mForces);
-    
-    // if(count > 0) {
-    //     std::cout << count << "is "<<std::endl;
-    //     std::cout << mForces << std::endl;
-    // }
-    count--;
 }
 
 
@@ -105,10 +95,6 @@ void Controller::addSPDTendonForces(){
     double default_width = 0.5;
     double linearForce;
 
-    //Ycontroller[1] = mForces[1];
-    //mFinger->setForces(Ycontroller);
-
-    //  std::cout << q_mod << std::endl;
     double z_angle = (M_PI - q[0])/2;
     linearForce = (mForces[0]) / (default_width / 2 * ((z_angle > 0) - (z_angle < 0))* std::max(std::abs(std::sin(z_angle)), 0.005));
     mTendon[0]->ApplyForceToBody(std::max(linearForce, 0.0));
@@ -118,21 +104,11 @@ void Controller::addSPDTendonForces(){
 
     for(std::size_t i=2 ; i < mTendon.size(); ++i){
         double current_angle = (M_PI - q[i])/2;
-
-        //std::cout << current_angle * 180 / M_PI <<std::endl;
-        //double angle = (180-tendon_angle) /2 * M_PI / 180;
-        
-        linearForce = -(mForces[i]) / (default_width / 2 * ((current_angle > 0) - (current_angle < 0))* std::max(std::abs(std::sin(current_angle)), 0.005));
-        // if(count > 0 ) std::cout << i << " is "<< linearForce<< std::endl;            
+        linearForce = -(mForces[i]) / (default_width / 2 * ((current_angle > 0) - (current_angle < 0))* std::max(std::abs(std::sin(current_angle)), 0.005));      
         mTendon[i]->ApplyForceToBody(linearForce);       
 
     }
     count--;
-
-    // for (std::size_t i =0 ; i < mFinger->getNumJoints() ; ++i){
-    //  	BodyNode* bn = mFinger->getBodyNode(i);
-    //  	std::cout << i << "and " << bn->getName() << std::endl;
-    //  }
 
 }
 

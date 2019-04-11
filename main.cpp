@@ -7,7 +7,6 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::simulation;
 using namespace dart::gui;
-using namespace dart::gui::glut;
 using namespace dart::math;
 
 
