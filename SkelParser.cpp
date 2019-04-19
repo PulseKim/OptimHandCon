@@ -40,7 +40,8 @@ void SkelParser::makeFloor(const SkeletonPtr& floor, const std::string& name){
 
 void SkelParser::makeBall(const SkeletonPtr& ball)
 {
-	ShapePtr shape = std::shared_ptr<EllipsoidShape>(new EllipsoidShape(Eigen::Vector3d(4.0,4.0,4.0)));
+	double radius =3.0;
+	ShapePtr shape = std::shared_ptr<EllipsoidShape>(new EllipsoidShape(Eigen::Vector3d(radius,radius,radius)));
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
@@ -53,7 +54,7 @@ void SkelParser::makeBall(const SkeletonPtr& ball)
 	props.mName = "ball";
 	Eigen::Isometry3d T;
 	T.setIdentity();	
-	T.translation() = Eigen::Vector3d(0.0,-2.5,0.0);
+	T.translation() = Eigen::Vector3d(0.0,-2.0,0.0);
 	props.mT_ChildBodyToJoint = T;
 	bn = ball->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("cylinder")).second;
 	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
@@ -67,11 +68,11 @@ void SkelParser::makeBall(const SkeletonPtr& ball)
 void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 {
  	//Shape
-	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.5, 4.0));
+	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.0, 1.2));
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
-	inertia.setMass(mass);
+	inertia.setMass(default_mass*2.5);
 	inertia.setMoment(shape->computeInertia(mass));
 
 	//Joint Parsing
@@ -80,7 +81,7 @@ void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 	props.mName = "cylinder";
 	Eigen::Isometry3d T;
 	T.setIdentity();	
-	T.translation() = Eigen::Vector3d(5.0,-2.0,0.0);
+	T.translation() = Eigen::Vector3d(0.0,0.0,0.0);
 	props.mT_ChildBodyToJoint = T;
 	bn = cylinder->createJointAndBodyNodePair<FreeJoint>(nullptr,props,BodyNode::AspectProperties("cylinder")).second;
 	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
@@ -90,9 +91,9 @@ void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 
 	cylinder->setPosition(0, 90.0* M_PI /180);
 	cylinder->setPosition(3, -0);
-	cylinder->setPosition(4, 2.1);
-	cylinder->setPosition(5, -2.0);
-	bn->setFrictionCoeff(5.0);
+	cylinder->setPosition(4, 1.2);
+	cylinder->setPosition(5, -0);
+	bn->setFrictionCoeff(10.0);
 }
 
 
@@ -210,7 +211,7 @@ BodyNode* SkelParser::makeWeldJoint (const SkeletonPtr& skel, BodyNode* parent, 
 	Eigen::Isometry3d T2;
 
 	T1.setIdentity();
-	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
+	T1.translation() = Eigen::Vector3d(0.0,0.0, 0.0);
 
 	T2.setIdentity();
 	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);

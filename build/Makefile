@@ -150,6 +150,33 @@ Controller.cpp.s:
 	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/Controller.cpp.s
 .PHONY : Controller.cpp.s
 
+Dynamics.o: Dynamics.cpp.o
+
+.PHONY : Dynamics.o
+
+# target to build an object file
+Dynamics.cpp.o:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/Dynamics.cpp.o
+.PHONY : Dynamics.cpp.o
+
+Dynamics.i: Dynamics.cpp.i
+
+.PHONY : Dynamics.i
+
+# target to preprocess a source file
+Dynamics.cpp.i:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/Dynamics.cpp.i
+.PHONY : Dynamics.cpp.i
+
+Dynamics.s: Dynamics.cpp.s
+
+.PHONY : Dynamics.s
+
+# target to generate assembly for a file
+Dynamics.cpp.s:
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/Dynamics.cpp.s
+.PHONY : Dynamics.cpp.s
+
 HandMaker.o: HandMaker.cpp.o
 
 .PHONY : HandMaker.o
@@ -324,6 +351,9 @@ help:
 	@echo "... Controller.o"
 	@echo "... Controller.i"
 	@echo "... Controller.s"
+	@echo "... Dynamics.o"
+	@echo "... Dynamics.i"
+	@echo "... Dynamics.s"
 	@echo "... HandMaker.o"
 	@echo "... HandMaker.i"
 	@echo "... HandMaker.s"

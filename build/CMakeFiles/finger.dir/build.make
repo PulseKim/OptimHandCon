@@ -153,9 +153,33 @@ CMakeFiles/finger.dir/Controller.cpp.o.provides: CMakeFiles/finger.dir/Controlle
 CMakeFiles/finger.dir/Controller.cpp.o.provides.build: CMakeFiles/finger.dir/Controller.cpp.o
 
 
+CMakeFiles/finger.dir/Dynamics.cpp.o: CMakeFiles/finger.dir/flags.make
+CMakeFiles/finger.dir/Dynamics.cpp.o: ../Dynamics.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/finger.dir/Dynamics.cpp.o"
+	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/finger.dir/Dynamics.cpp.o -c /home/mrl/dart/tutorials/finger/Dynamics.cpp
+
+CMakeFiles/finger.dir/Dynamics.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/finger.dir/Dynamics.cpp.i"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/mrl/dart/tutorials/finger/Dynamics.cpp > CMakeFiles/finger.dir/Dynamics.cpp.i
+
+CMakeFiles/finger.dir/Dynamics.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/finger.dir/Dynamics.cpp.s"
+	/usr/bin/c++  $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/mrl/dart/tutorials/finger/Dynamics.cpp -o CMakeFiles/finger.dir/Dynamics.cpp.s
+
+CMakeFiles/finger.dir/Dynamics.cpp.o.requires:
+
+.PHONY : CMakeFiles/finger.dir/Dynamics.cpp.o.requires
+
+CMakeFiles/finger.dir/Dynamics.cpp.o.provides: CMakeFiles/finger.dir/Dynamics.cpp.o.requires
+	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/Dynamics.cpp.o.provides.build
+.PHONY : CMakeFiles/finger.dir/Dynamics.cpp.o.provides
+
+CMakeFiles/finger.dir/Dynamics.cpp.o.provides.build: CMakeFiles/finger.dir/Dynamics.cpp.o
+
+
 CMakeFiles/finger.dir/SkelParser.cpp.o: CMakeFiles/finger.dir/flags.make
 CMakeFiles/finger.dir/SkelParser.cpp.o: ../SkelParser.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/finger.dir/SkelParser.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/finger.dir/SkelParser.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/finger.dir/SkelParser.cpp.o -c /home/mrl/dart/tutorials/finger/SkelParser.cpp
 
 CMakeFiles/finger.dir/SkelParser.cpp.i: cmake_force
@@ -179,7 +203,7 @@ CMakeFiles/finger.dir/SkelParser.cpp.o.provides.build: CMakeFiles/finger.dir/Ske
 
 CMakeFiles/finger.dir/Tendon.cpp.o: CMakeFiles/finger.dir/flags.make
 CMakeFiles/finger.dir/Tendon.cpp.o: ../Tendon.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/finger.dir/Tendon.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/finger.dir/Tendon.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/finger.dir/Tendon.cpp.o -c /home/mrl/dart/tutorials/finger/Tendon.cpp
 
 CMakeFiles/finger.dir/Tendon.cpp.i: cmake_force
@@ -203,7 +227,7 @@ CMakeFiles/finger.dir/Tendon.cpp.o.provides.build: CMakeFiles/finger.dir/Tendon.
 
 CMakeFiles/finger.dir/main.cpp.o: CMakeFiles/finger.dir/flags.make
 CMakeFiles/finger.dir/main.cpp.o: ../main.cpp
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/finger.dir/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/finger.dir/main.cpp.o"
 	/usr/bin/c++   $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -o CMakeFiles/finger.dir/main.cpp.o -c /home/mrl/dart/tutorials/finger/main.cpp
 
 CMakeFiles/finger.dir/main.cpp.i: cmake_force
@@ -231,6 +255,7 @@ finger_OBJECTS = \
 "CMakeFiles/finger.dir/HandMaker.cpp.o" \
 "CMakeFiles/finger.dir/MyWindow.cpp.o" \
 "CMakeFiles/finger.dir/Controller.cpp.o" \
+"CMakeFiles/finger.dir/Dynamics.cpp.o" \
 "CMakeFiles/finger.dir/SkelParser.cpp.o" \
 "CMakeFiles/finger.dir/Tendon.cpp.o" \
 "CMakeFiles/finger.dir/main.cpp.o"
@@ -242,6 +267,7 @@ finger: CMakeFiles/finger.dir/IkSolver.cpp.o
 finger: CMakeFiles/finger.dir/HandMaker.cpp.o
 finger: CMakeFiles/finger.dir/MyWindow.cpp.o
 finger: CMakeFiles/finger.dir/Controller.cpp.o
+finger: CMakeFiles/finger.dir/Dynamics.cpp.o
 finger: CMakeFiles/finger.dir/SkelParser.cpp.o
 finger: CMakeFiles/finger.dir/Tendon.cpp.o
 finger: CMakeFiles/finger.dir/main.cpp.o
@@ -274,7 +300,7 @@ finger: /usr/lib/liboctomath.so
 finger: /usr/lib/x86_64-linux-gnu/libboost_regex.so
 finger: /usr/lib/libipopt.so
 finger: CMakeFiles/finger.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Linking CXX executable finger"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable finger"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/finger.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -286,6 +312,7 @@ CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/IkSolver.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/HandMaker.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/MyWindow.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/Controller.cpp.o.requires
+CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/Dynamics.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/SkelParser.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/Tendon.cpp.o.requires
 CMakeFiles/finger.dir/requires: CMakeFiles/finger.dir/main.cpp.o.requires

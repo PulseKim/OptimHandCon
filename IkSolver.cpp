@@ -100,7 +100,7 @@ Eigen::VectorXd IkSolver::IKMultiple(const SkeletonPtr& hand, std::vector<std::p
 	return newPose;
 }
 
-Eigen::VectorXd IkSolver::IKFingerOnly(const SkeletonPtr& hand, std::vector<std::pair<Eigen::Vector3d, int>> Ends, int iter)
+Eigen::VectorXd IkSolver::IKFingerOnly(const SkeletonPtr& hand, std::vector<std::pair<Eigen::Vector3d, int>> Ends)
 {	
 	Eigen::MatrixXd J_stack = Eigen::MatrixXd::Zero(Ends[0].first.rows()*Ends.size(),hand->getPositions().size());
 	Eigen::VectorXd dev_stack;
@@ -128,3 +128,4 @@ Eigen::VectorXd IkSolver::IKFingerOnly(const SkeletonPtr& hand, std::vector<std:
 	newPose = newPose * 0.15;
 	return newPose;
 }
+

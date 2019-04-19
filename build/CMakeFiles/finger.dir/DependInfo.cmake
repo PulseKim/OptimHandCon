@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
   "/home/mrl/dart/tutorials/finger/Controller.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/Controller.cpp.o"
+  "/home/mrl/dart/tutorials/finger/Dynamics.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/Dynamics.cpp.o"
   "/home/mrl/dart/tutorials/finger/HandMaker.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/HandMaker.cpp.o"
   "/home/mrl/dart/tutorials/finger/IkSolver.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/IkSolver.cpp.o"
   "/home/mrl/dart/tutorials/finger/MyWindow.cpp" "/home/mrl/dart/tutorials/finger/build/CMakeFiles/finger.dir/MyWindow.cpp.o"

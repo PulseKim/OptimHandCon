@@ -5,20 +5,10 @@
 #include "Tendon.hpp"
 #include "IkSolver.hpp"
 
-using namespace dart::common;
-using namespace dart::dynamics;
-using namespace dart::simulation;
-using namespace dart::gui;
-using namespace dart::math;
-
-const double tendon_angle = 30.0;
-
-enum {JOINT_F=0, HAND};
-
 class Controller{
 public:
 	//Constructor
-	Controller(const SkeletonPtr& finger, std::vector<Tendon*> tendon, int type);
+	Controller(const SkeletonPtr& finger, std::vector<Tendon*> tendon);
 	void jointControlSetter();
 	void setTargetPosition(const Eigen::VectorXd& pose);
 	void clearForces();
@@ -26,6 +16,7 @@ public:
 	void addPDForces();
 	void addSPDTendonForces();
 	void addSPDTendonDirectionForces();
+	Eigen::VectorXd grabOrOpen(const SkeletonPtr& ball, Eigen::VectorXd originalPose,bool isOpen);
 	double prevTorque(const Eigen::Vector3d current_point);
 
 

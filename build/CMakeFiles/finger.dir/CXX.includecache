@@ -32,6 +32,24 @@ Tendon.hpp
 IkSolver.hpp
 /home/mrl/dart/tutorials/finger/IkSolver.hpp
 
+/home/mrl/dart/tutorials/finger/Dynamics.cpp
+Dynamics.hpp
+/home/mrl/dart/tutorials/finger/Dynamics.hpp
+math.h
+-
+
+/home/mrl/dart/tutorials/finger/Dynamics.hpp
+iostream
+-
+dart/dart.hpp
+-
+dart/gui/gui.hpp
+-
+dart/utils/utils.hpp
+-
+Controller.hpp
+/home/mrl/dart/tutorials/finger/Controller.hpp
+
 /home/mrl/dart/tutorials/finger/HandMaker.cpp
 HandMaker.hpp
 /home/mrl/dart/tutorials/finger/HandMaker.hpp
@@ -91,10 +109,10 @@ dart/gui/gui.hpp
 -
 dart/utils/utils.hpp
 -
-Controller.hpp
-/home/mrl/dart/tutorials/finger/Controller.hpp
 HandMaker.hpp
 /home/mrl/dart/tutorials/finger/HandMaker.hpp
+Dynamics.hpp
+/home/mrl/dart/tutorials/finger/Dynamics.hpp
 
 /home/mrl/dart/tutorials/finger/SkelParser.cpp
 iostream

@@ -8,18 +8,15 @@ using namespace dart::common;
 using namespace dart::dynamics;
 using namespace dart::math;
 
-const double mag_Kp = 500;
+
+const double mag_Kp = 1000;
 const double mag_Kd = 2 * std::sqrt(mag_Kp);
 int count = 5;
+const double rad = M_PI /180.0;
 
-Controller::Controller(const SkeletonPtr& finger, std::vector<Tendon*> tendon, int type): mFinger(finger){
+Controller::Controller(const SkeletonPtr& finger, std::vector<Tendon*> tendon): mFinger(finger){
     mTendon = tendon;
-    if(type == JOINT_F){
-          jointControlSetter();
-    }
-    else if(type == HAND){
-
-    }
+    jointControlSetter();
 }
 
 void Controller::jointControlSetter(){
@@ -34,8 +31,8 @@ void Controller::jointControlSetter(){
     for(std::size_t i = 0; i < nDofs; ++i){
       mKp(i,i) = mag_Kp;
       mKd(i,i) = mag_Kd;
-    }
-    Controller::setTargetPosition(mFinger->getPositions());
+  }
+  Controller::setTargetPosition(mFinger->getPositions());
 }
 
 void Controller::setTargetPosition(const Eigen::VectorXd& pose){
@@ -178,3 +175,44 @@ double Controller::prevTorque(const Eigen::Vector3d current_point){
     //if(count > 0) std::cout << torque_sum <<std::endl;
     return torque_sum;
 }
+
+Eigen::VectorXd Controller::grabOrOpen(const SkeletonPtr& ball, Eigen::VectorXd originalPose, bool isOpen){
+    Eigen::VectorXd pose = originalPose;
+    if(isOpen){
+        // std::vector<std::pair<Eigen::Vector3d, int>> Ends;
+        // std::vector<Eigen::Vector3d> point;
+        // Eigen::Vector3d cylPose(11, 3.5, 0);
+        // double pointy = cylPose[1];
+        // double theta = 60*rad;
+        // double offset = -0*rad;
+        // int i;
+        // for(i = 0; i < 5; ++i){
+        //     point.push_back(Eigen::Vector3d(cylPose[0]+3.0*sin(theta*i+offset), pointy, cylPose[2] - 3.0*cos(theta*i+offset)));
+        //     Ends.push_back(std::make_pair(point[i] ,i));
+        //     // std::cout << point[i] <<std::endl;
+        // }
+        // IkSolver ik;
+
+        // pose+= ik.IKFingerOnly(mFinger, Ends);
+        // std::cout<<pose <<std::endl;
+
+        // // for(int i = 6 ; i< 22 ; ++i){
+        // //     pose[i] = 30.0* rad;
+        // // }
+        // // pose[22] = 100.0 * rad;
+        // // pose[23] = -40.0 * rad;
+        // // pose[24] = 30.0 * rad;
+        for(int i = 0 ; i< 4 ; ++i){
+            pose[i*4 + 7] = 75.0* rad;
+            pose[i*4 + 8] = 70.0* rad;
+            pose[i*4 + 9] = 60.0* rad;
+        }
+        pose[22] = 90.0 * rad;
+        pose[23] = -40.0 * rad;
+        pose[24] = 30.0 * rad;
+        pose[25] = 40.0 * rad;
+        pose[26] = 40.0 * rad;
+    }
+    return pose;
+}
+

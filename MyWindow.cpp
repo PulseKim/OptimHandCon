@@ -10,13 +10,16 @@ using namespace dart::gui;
 using namespace dart::math;
 
 bool controlBit = false;
+bool isOpen = true;
 int mIKCountDown = 0;
 int mPreCountDown = 0;
 
 std::vector<Eigen::Vector3d> point;
 Eigen::Vector3d pretarget;
+Eigen::VectorXd targetpose;
+Eigen::VectorXd currentpose;
 
-
+ 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 {	
 	this->setWorld(world);
@@ -28,7 +31,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 	}
 	defaultPose = hand->getPositions();
 	mController = dart::common::make_unique<Controller>(
-		mWorld->getSkeleton("hand"),tempTendon, JOINT_F);
+		mWorld->getSkeleton("hand"),tempTendon);
 
 	targetMovement();
 	setPretarget();
@@ -79,25 +82,28 @@ void MyWindow::initSkeleton(){
 
 	SkelParser skelP;
 	skelP.makeFloor(floor, "floor");
-	skelP.makeBall(ball);
-	// skelP.makeCylinder(ball);
+	// skelP.makeBall(ball);
+	skelP.makeCylinder(ball);
 
 	HandMaker handMaker;
 	handMaker.makeHand(hand);
 
 	mFingerTendon = handMaker.fingerTendon;
 
-	//mWorld->addSkeleton(floor);
+	// mWorld->addSkeleton(floor);
 	mWorld->addSkeleton(hand);
 	mWorld->addSkeleton(ball);
 	poseSetter();
 }
 
-void MyWindow::poseSetter(){
+void MyWindow::poseSetter()
+{
 	Eigen::VectorXd pose = hand->getPositions();
 	pose[2] = radian(-90);
 	hand->setPositions(pose);
-	ball->setPosition(3, hand->getBodyNode("palm")->getCOM()[0] + 1.0);
+	ball->setPosition(3, hand->getBodyNode("palm")->getCOM()[0]);
+	ball->setPosition(4, 0.9);
+	//ball->setPosition(5, 0.001);
 }
 
 
@@ -110,6 +116,8 @@ void MyWindow::initSkeletonFinger()
 	skelP.makeFloor(floor, "floor");
 	skelP.makeFinger(finger);
 	//skelP.sphereJointVis(skel, visual_sphere);
+
+	double tendon_angle = 30.0;
 
 	skelP.setGeometry(finger, "L2", -tendon_angle * 1.0, 0);
 	skelP.setGeometry(finger, "L2", tendon_angle, 2);
@@ -208,9 +216,6 @@ void MyWindow::initTendonFinger(){
 
 void MyWindow::showTorque()
 {
-	// std::cout <<"Force" << std::endl;
-	// std::cout << finger->getExternalForces() << std::endl;
-	// std::cout << finger->getExternalForces() << std::endl;
 	std::cout << "pose" << std::endl;
 	std::cout << hand->getPositions() << std::endl;
 }
@@ -222,15 +227,14 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 	switch(key)
 	{
 		case 'q':
-		mForceCountDown = default_countdown;
-		break;
-		case 'a':
+		currentpose = hand->getPositions();
 		mPoseCountDown = default_countdown_movement;
-		controlBit = !controlBit;
+		// mController->setTargetPosition(mController->grabOrOpen(ball, defaultPose, isOpen));
+		// isOpen = !isOpen;
 		break;
 		case 'z':
 		pose = hand->getPositions();
-		pose[2] -= 20 * M_PI / 180;
+		pose[2] += radian(5);
 		mController->setTargetPosition(pose);
 		break;
 		case 'x':
@@ -270,22 +274,17 @@ void MyWindow::timeStepping()
 		--mIKCountDown;
 	}
 
-	if(mPoseCountDown > 0)
+	if(mPoseCountDown >=0)
 	{
-		if(mPoseCountDown%50 == 0){
-			Eigen::VectorXd targetpose = defaultPose;
-			if(controlBit){
-				for(int i =0; i<targetpose.size();++i)
-					targetpose[i] = defaultPose[i] + (goalPose[i] - defaultPose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
-			}
-			else{
-				for(int i =0; i<targetpose.size();++i)
-					targetpose[i] = goalPose[i] + (defaultPose[i] - goalPose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
-			}
-		//std::cout<< targetpose[3] <<std::endl;
-			mController->setTargetPosition(targetpose);
+		Eigen::VectorXd pose = currentpose;
+		targetpose = mController->grabOrOpen(ball,defaultPose, isOpen);
+		if(mPoseCountDown%50 == 0){			
+			for(int i =0; i<targetpose.size();++i)
+				pose[i] = currentpose[i] + (targetpose[i] - currentpose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
+			mController->setTargetPosition(pose);
 		}
 		--mPoseCountDown;
+		if(mPoseCountDown < 0 ) isOpen = !isOpen;
 	}
 
 	if(mForceCountDown > 0)

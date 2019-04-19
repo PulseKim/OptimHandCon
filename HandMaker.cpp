@@ -18,6 +18,7 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 	mSkel.setGeometry(hand, "thumb_ball", 50.0, 0);
 	mSkel.setGeometry(hand, "thumb_ball", -30.0, 1);
 	mSkel.setGeometry(hand, "thumb_ball", 30.0, 2);
+	//mSkel.setGeometry(hand, "thumb_revol_down", 15.0, 0);
 
 	for(std::size_t i = 0; i < hand->getNumJoints(); ++i)
 		hand->getJoint(i)->setPositionLimitEnforced(true);

@@ -2,8 +2,8 @@
 #include <dart/dart.hpp>
 #include <dart/gui/gui.hpp>
 #include <dart/utils/utils.hpp>
-#include "Controller.hpp"
 #include "HandMaker.hpp"
+#include "Dynamics.hpp"
 
 using namespace dart::common;
 using namespace dart::dynamics;
