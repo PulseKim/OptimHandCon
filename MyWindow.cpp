@@ -19,7 +19,7 @@ Eigen::Vector3d pretarget;
 Eigen::VectorXd targetpose;
 Eigen::VectorXd currentpose;
 
- 
+
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 {	
 	this->setWorld(world);
@@ -33,9 +33,14 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	targetMovement();
-	setPretarget();
-	setTarget();
+	// targetMovement();
+	// setPretarget();
+	// setTarget();
+
+	//Pre grabbing algorithm
+	currentpose = hand->getPositions();
+	mPoseCountDown = default_countdown_movement;
+	targetpose = mController->grabOrOpen(currentpose, isOpen);
 
 	// ik.IKSingleConfig(temporal, hand, 1);
 
@@ -227,14 +232,22 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 	switch(key)
 	{
 		case 'q':
+		isOpen = !isOpen;
+		std::cout << isOpen << std::endl;
 		currentpose = hand->getPositions();
 		mPoseCountDown = default_countdown_movement;
+		targetpose = mController->grabOrOpen(currentpose, isOpen);
 		// mController->setTargetPosition(mController->grabOrOpen(ball, defaultPose, isOpen));
 		// isOpen = !isOpen;
 		break;
-		case 'z':
+		case 'a':
 		pose = hand->getPositions();
 		pose[2] += radian(5);
+		mController->setTargetPosition(pose);
+		break;
+		case 's':
+		pose = hand->getPositions();
+		pose[2] -= radian(5);
 		mController->setTargetPosition(pose);
 		break;
 		case 'x':
@@ -274,17 +287,15 @@ void MyWindow::timeStepping()
 		--mIKCountDown;
 	}
 
-	if(mPoseCountDown >=0)
+	if(mPoseCountDown >0)
 	{
-		Eigen::VectorXd pose = currentpose;
-		targetpose = mController->grabOrOpen(ball,defaultPose, isOpen);
+		Eigen::VectorXd pose = currentpose;		
 		if(mPoseCountDown%50 == 0){			
 			for(int i =0; i<targetpose.size();++i)
 				pose[i] = currentpose[i] + (targetpose[i] - currentpose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
 			mController->setTargetPosition(pose);
 		}
 		--mPoseCountDown;
-		if(mPoseCountDown < 0 ) isOpen = !isOpen;
 	}
 
 	if(mForceCountDown > 0)

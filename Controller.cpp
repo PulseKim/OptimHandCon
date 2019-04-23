@@ -176,26 +176,9 @@ double Controller::prevTorque(const Eigen::Vector3d current_point){
     return torque_sum;
 }
 
-Eigen::VectorXd Controller::grabOrOpen(const SkeletonPtr& ball, Eigen::VectorXd originalPose, bool isOpen){
+Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isOpen){
     Eigen::VectorXd pose = originalPose;
     if(isOpen){
-        // std::vector<std::pair<Eigen::Vector3d, int>> Ends;
-        // std::vector<Eigen::Vector3d> point;
-        // Eigen::Vector3d cylPose(11, 3.5, 0);
-        // double pointy = cylPose[1];
-        // double theta = 60*rad;
-        // double offset = -0*rad;
-        // int i;
-        // for(i = 0; i < 5; ++i){
-        //     point.push_back(Eigen::Vector3d(cylPose[0]+3.0*sin(theta*i+offset), pointy, cylPose[2] - 3.0*cos(theta*i+offset)));
-        //     Ends.push_back(std::make_pair(point[i] ,i));
-        //     // std::cout << point[i] <<std::endl;
-        // }
-        // IkSolver ik;
-
-        // pose+= ik.IKFingerOnly(mFinger, Ends);
-        // std::cout<<pose <<std::endl;
-
         // // for(int i = 6 ; i< 22 ; ++i){
         // //     pose[i] = 30.0* rad;
         // // }
