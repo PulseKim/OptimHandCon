@@ -20,7 +20,9 @@ public:
 	double prevTorque(const Eigen::Vector3d current_point);
 
 
-
+public:
+	//Target positions for the PD controllers
+	Eigen::VectorXd mTargetPositions;
 
 protected:
 	//Finger model used to control
@@ -43,8 +45,7 @@ protected:
 	//Control gains for the derivative error terms in the PD controller
 	Eigen::MatrixXd mKd;
 
-	//Target positions for the PD controllers
-	Eigen::VectorXd mTargetPositions;
+	
 
 	std::vector<std::pair<Eigen::Vector3d, Eigen::Vector3d>> prevForces;
 };

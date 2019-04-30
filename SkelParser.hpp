@@ -35,6 +35,9 @@ public:
 
   ///Overload Joint makers
 
+  BodyNode* makeEulerJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+  double width, double length, double z_len, double x_offset, double y_offset, double z_offset, double limit_upper_x, double limit_lower_x, double limit_upper_y, double limit_lower_y, double limit_upper_z, double limit_lower_z);
+
   BodyNode* makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
   double width, double length, double z_len, double x_offset, double y_offset, double z_offset, double limit_upper_x, double limit_lower_x, double limit_upper_y, double limit_lower_y, double limit_upper_z, double limit_lower_z);
 

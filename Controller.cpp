@@ -9,7 +9,7 @@ using namespace dart::dynamics;
 using namespace dart::math;
 
 
-const double mag_Kp = 1000;
+const double mag_Kp = 3000;
 const double mag_Kd = 2 * std::sqrt(mag_Kp);
 int count = 5;
 const double rad = M_PI /180.0;
@@ -31,7 +31,7 @@ void Controller::jointControlSetter(){
     for(std::size_t i = 0; i < nDofs; ++i){
       mKp(i,i) = mag_Kp;
       mKd(i,i) = mag_Kd;
-  }
+    }
   Controller::setTargetPosition(mFinger->getPositions());
 }
 
@@ -59,6 +59,10 @@ void Controller::addPDForces(){
 void Controller::addSPDForces(){
 	Eigen::VectorXd q = mFinger->getPositions();
     Eigen::VectorXd dq = mFinger->getVelocities();
+    for(int i = 0; i < q.size(); ++i){
+        if(q[i]-mTargetPositions[i] > M_PI) q[i]-=2*M_PI;
+        else if(q[i]-mTargetPositions[i] < -M_PI) q[i]+=2*M_PI;
+    }
 
     Eigen::MatrixXd invM = (mFinger->getMassMatrix()
         + mKd * mFinger->getTimeStep()).inverse();
@@ -71,6 +75,12 @@ void Controller::addSPDForces(){
     
     mForces += p + d - mKd * qddot * mFinger->getTimeStep();
     mFinger->setForces(mForces);
+
+    std::cout << "Current pose and force " << std::endl;
+    std::cout << q[2] /rad << std::endl;
+    std::cout << mTargetPositions[2] / rad << std::endl;
+    std::cout << dq[2] << std::endl;
+    std::cout << mForces[2] << std::endl;
 }
 
 
@@ -195,6 +205,19 @@ Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isOpen
         pose[24] = 30.0 * rad;
         pose[25] = 40.0 * rad;
         pose[26] = 40.0 * rad;
+    }
+    else{
+        for(int i = 0 ; i< 4 ; ++i){
+            pose[i*4 + 7] = 0.0* rad;
+            pose[i*4 + 8] = 0.0* rad;
+            pose[i*4 + 9] = 0.0* rad;
+        }
+        pose[22] = 50.0 * rad;
+        pose[23] = -30.0 * rad;
+        pose[24] = 30.0 * rad;
+        pose[25] = 0.0 * rad;
+        pose[26] = 0.0 * rad;
+
     }
     return pose;
 }

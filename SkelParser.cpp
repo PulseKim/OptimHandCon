@@ -72,7 +72,7 @@ void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
-	inertia.setMass(default_mass*2.5);
+	inertia.setMass(default_mass*1.0);
 	inertia.setMoment(shape->computeInertia(mass));
 
 	//Joint Parsing
@@ -129,6 +129,7 @@ BodyNode* SkelParser::makeRoot(const SkeletonPtr& skel, const std::string& name)
 	bn->setInertia(inertia);	
 	return bn;
 }
+
 
 BodyNode* SkelParser::makeBallJoint(const SkeletonPtr& skel, BodyNode* parent, const std::string& name){
 	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(default_width, default_link_len, default_width)));
@@ -253,7 +254,7 @@ BodyNode* SkelParser::makeBallJoint
 	T1.setIdentity();
 	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
 	T2.setIdentity();
-	T2.translation() = Eigen::Vector3d(x_offset, y_offset,z_offset);
+	T2.translation() = Eigen::Vector3d(x_offset, y_offset, z_offset);
 
 	props.mT_ChildBodyToJoint = T1;
 	props.mT_ParentBodyToJoint = T2;
@@ -265,6 +266,46 @@ BodyNode* SkelParser::makeBallJoint
 	bn->setInertia(inertia);
 	return bn;
 }
+
+BodyNode* SkelParser::makeEulerJoint
+(const SkeletonPtr& skel, BodyNode* parent, const std::string& name, 
+	double width, double length, double z_len, double x_offset, double y_offset, double z_offset, double limit_upper_x, double limit_lower_x, double limit_upper_y, double limit_lower_y, double limit_upper_z, double limit_lower_z)
+{
+	ShapePtr shape = std::shared_ptr<BoxShape>(new BoxShape(Eigen::Vector3d(width, length, z_len)));
+	double mass = default_mass;
+	dart::dynamics::Inertia inertia;
+	inertia.setMass(mass);
+	inertia.setMoment(shape->computeInertia(mass));
+	BodyNode* bn;
+	EulerJoint::Properties props;
+	props.mName = name;
+	props.mAxisOrder = EulerJoint::AxisOrder::XYZ;
+	props.mDampingCoefficients = Eigen::Vector3d::Constant(0.4);
+	props.mPositionLowerLimits[0] = limit_lower_x * M_PI / 180.0;
+	props.mPositionUpperLimits[0] = limit_upper_x * M_PI / 180.0;
+	props.mPositionLowerLimits[1] = limit_lower_y * M_PI / 180.0;
+	props.mPositionUpperLimits[1] = limit_upper_y * M_PI / 180.0;
+	props.mPositionLowerLimits[2] = limit_lower_z * M_PI / 180.0;
+	props.mPositionUpperLimits[2] = limit_upper_z * M_PI / 180.0;
+
+	Eigen::Isometry3d T1;
+	Eigen::Isometry3d T2;
+	T1.setIdentity();
+	T1.translation() = Eigen::Vector3d(0.0,-length/2, 0.0);
+	T2.setIdentity();
+	T2.translation() = Eigen::Vector3d(x_offset, y_offset, z_offset);
+
+	props.mT_ChildBodyToJoint = T1;
+	props.mT_ParentBodyToJoint = T2;
+
+	bn = skel->createJointAndBodyNodePair<EulerJoint>(
+		parent, props, BodyNode::AspectProperties(name)).second;
+	bn->createShapeNodeWith<VisualAspect,CollisionAspect,DynamicsAspect>(shape);
+	bn->setInertia(inertia);
+	return bn;
+}
+
+
 
 
 BodyNode* SkelParser::makeRevoluteJoint

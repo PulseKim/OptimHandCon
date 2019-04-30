@@ -33,16 +33,17 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	// targetMovement();
-	// setPretarget();
-	// setTarget();
-
-	//Pre grabbing algorithm
-	currentpose = hand->getPositions();
+	//Pregrabbing algorithm
+	currentpose = mController->mTargetPositions;
 	mPoseCountDown = default_countdown_movement;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
 
 	// ik.IKSingleConfig(temporal, hand, 1);
+
+
+	// targetMovement();
+	// setPretarget();
+	// setTarget();
 
 	// initSkeletonFinger();    
 	// initTendonFinger();
@@ -234,20 +235,30 @@ void MyWindow::keyboard(unsigned char key, int x, int y)
 		case 'q':
 		isOpen = !isOpen;
 		std::cout << isOpen << std::endl;
-		currentpose = hand->getPositions();
+		currentpose = mController->mTargetPositions;
 		mPoseCountDown = default_countdown_movement;
 		targetpose = mController->grabOrOpen(currentpose, isOpen);
 		// mController->setTargetPosition(mController->grabOrOpen(ball, defaultPose, isOpen));
 		// isOpen = !isOpen;
 		break;
 		case 'a':
-		pose = hand->getPositions();
+		pose = mController->mTargetPositions;
 		pose[2] += radian(5);
 		mController->setTargetPosition(pose);
 		break;
 		case 's':
-		pose = hand->getPositions();
+		pose = mController->mTargetPositions;
 		pose[2] -= radian(5);
+		mController->setTargetPosition(pose);
+		break;
+		case 'd':
+		pose = mController->mTargetPositions;
+		pose[4] += radian(5);
+		mController->setTargetPosition(pose);
+		break;
+		case 'f':
+		pose = mController->mTargetPositions;
+		pose[4] -= radian(5);
 		mController->setTargetPosition(pose);
 		break;
 		case 'x':

@@ -42,7 +42,7 @@ BodyNode* HandMaker::makeArm(const SkeletonPtr& hand){
 	std::string name = "root";
 	BodyNode* bn = mSkel.makeWeldJoint(hand, nullptr, name, hand_z, weld_height, arm_width, 0.0, 0.0, 0.0);
 	name = "arm_ball";
-	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, arm_height, arm_width, 0.0, weld_height/2, 0.0, 180, -180, 180, -180, 180, -180);
+	bn = mSkel.makeEulerJoint(hand, bn, name, hand_z, arm_height, arm_width, 0.0, weld_height/2, 0.0, 0.01, -0.01, 0.01, -0.01, 180, -180);
 	name = "arm_univ";
 	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, arm_height, arm_width, 0.0, arm_height/2, 0.0, Eigen::Vector3d::UnitY(), Eigen::Vector3d::UnitZ(), 90.0, -90.0, 120.0, 0.0);
 	return bn;
@@ -59,7 +59,7 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 	double x_off = -palm_width / 2 + finger_width / 2 + (finger_width + gap) * idx;;
 	std::string name = "weld" + std::to_string(idx);	
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, finger_width, 0.0, palm_height/2, x_off);
-	name = "univ" + std::to_string(idx);	
+	name = "univ" + std::to_string(idx);
 	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),30, -30, 100, 0);
 	name = "revol_down" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
@@ -74,7 +74,7 @@ void HandMaker::makeThumb(const SkeletonPtr& hand)
 	std::string name = "thumb_weld";
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, thumb_width, 0.0, -thumb_height, palm_width/2);
 	name = "thumb_ball";
-	bn = mSkel.makeBallJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, 40, -40, 30, -30, 100, 0);
+	bn = mSkel.makeEulerJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, 40, -40, 30, -30, 100, 0);
 	name = "thumb_revol_down";
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
 	name = "thumb_revol_up";

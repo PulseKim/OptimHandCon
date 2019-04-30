@@ -107,9 +107,11 @@ double Dynamics::iterate(int index, int iter)
 
 void Dynamics::optimize(){
 	//How to deal with the pre-grabbing?????
-
+	//Set flag in MyWindowl.cpp
+	
 	//Initialize mControl, mOld, control indexes
 	std::vector<int> control_index;
+	
 
 	int numb_control = 6;
 	mControlPts.clear();
@@ -117,9 +119,8 @@ void Dynamics::optimize(){
 		mControlPts.push_back(Eigen::VectorXd::Zero(numb_control));
 	for(int i = 0; i < n ; ++i)
 		mOldPose.push_back(mCharacter->getPositions());
-
 	//To Do: Implement grab / open, initial controlpoints 
-
+	
 
 	//Initializing old pose
 	for(int i = 0; i < control_index.size(); ++i){
