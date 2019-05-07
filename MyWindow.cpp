@@ -38,7 +38,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 10.0, 0.0));
+	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 5.0, 0.0));
 	// dyn->optimize();
 
 	//Pregrabbing algorithm
@@ -81,13 +81,11 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		target_plus.push_back(tempPose);		
 		// std::cout << tempPose[2]<<std::endl;
 	}
+
 	// target_plus = dyn->poseGetter();
 
-	// std::cout << target_plus <<std::endl;
 
 	// ik.IKSingleConfig(temporal, hand, 1);
-
-
 	// targetMovement();
 	// setPretarget();
 	// setTarget();

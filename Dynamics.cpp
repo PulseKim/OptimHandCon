@@ -126,11 +126,11 @@ double Dynamics::iterate(int index, int iter)
 
 	//Set control points and oldpositions
 	mControlPts[index] = (mControlPts[index] - grad);
-	for(int i= 0 ; i < mControlPts.size();++i)
-	{
-		while(mControlPts[index][i] < M_PI) mControlPts[index][i] -= 2 * M_PI;
-		while(mControlPts[index][i] > -M_PI) mControlPts[index][i] += 2 * M_PI;
-	}
+	// for(int i= 0 ; i < mControlPts.size();++i)
+	// {
+	// 	while(mControlPts[index][i] > M_PI) mControlPts[index][i] -= 2 * M_PI;
+	// 	while(mControlPts[index][i] < -M_PI) mControlPts[index][i] += 2 * M_PI;
+	// }
 	mOldPose = computePose(mControlPts[index], index);
 
 	return e_left.norm();
@@ -204,7 +204,7 @@ void Dynamics::optimize()
 	for(int i = 0; i < pose.size(); ++i)
 		mControlPts.push_back(Eigen::VectorXd::Zero(numb_control));
 
-	int lambda = n * 95/100;
+	int lambda = n * 85/100;
 	//Initializing grabbing ==> Now, for simplicity, just given timing lamda as opener
 	for(int i = 0; i < lambda ; ++i)
 		mOldPose.push_back(grab_pose);
