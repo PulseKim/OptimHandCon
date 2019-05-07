@@ -13,14 +13,19 @@ bool controlBit = false;
 bool isOpen = true;
 int mIKCountDown = 0;
 int mPreCountDown = 0;
+int steps;
+int flag1 = 1;
+int flag2 = 1;
+int flag3 = 1;
+int flag4 = 0;
 
 std::vector<Eigen::Vector3d> point;
 Eigen::Vector3d pretarget;
 Eigen::VectorXd targetpose;
 Eigen::VectorXd currentpose;
+std::vector<Eigen::VectorXd> target_plus;
 
-
-MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
+MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPoseCountDown(-1)
 {	
 	this->setWorld(world);
 	mWorld->setGravity(Eigen::Vector3d(0,-9.81,0.0));
@@ -33,10 +38,52 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
+	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 10.0, 0.0));
+	// dyn->optimize();
+
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
-	mPoseCountDown = default_countdown_movement;
+	// mPoseCountDown = default_countdown_movement;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
+	std::vector<Eigen::VectorXd> seriesPose;
+	steps = 1.0 / mWorld->getTimeStep();
+	int timingOpen = steps *  80/ 100;
+	for(int i = 0; i < timingOpen ; ++i)
+		seriesPose.push_back(targetpose);
+	for(int i = timingOpen; i < steps; ++i){
+		Eigen::VectorXd interpolate_pose = currentpose;
+		if (i < timingOpen + 5){
+			for(int j = 0; j < currentpose.size(); ++j)
+				interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
+		}
+		else
+			interpolate_pose = currentpose;
+
+		seriesPose.push_back(interpolate_pose);
+	}
+
+	Eigen::VectorXd controlPts = Eigen::VectorXd::Zero(6);
+	controlPts[0] = -2.30182;
+	controlPts[1] = -2.16843;
+	controlPts[2] = -2.17809;
+	controlPts[3] = -1.45698;
+	controlPts[4] = -1.35552;
+	controlPts[5] = -1.5708;
+
+	for(int i = 0; i< steps ; ++i){
+		Eigen::VectorXd tempPose = seriesPose[i];
+		double current_t = mWorld->getTimeStep() * i;
+		tempPose[2] = 0;
+		int m = controlPts.size();
+		for(int j =0; j < m; ++j){
+			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
+		}
+		target_plus.push_back(tempPose);		
+		// std::cout << tempPose[2]<<std::endl;
+	}
+	// target_plus = dyn->poseGetter();
+
+	// std::cout << target_plus <<std::endl;
 
 	// ik.IKSingleConfig(temporal, hand, 1);
 
@@ -47,10 +94,6 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0)
 
 	// initSkeletonFinger();    
 	// initTendonFinger();
-	// controlBit = true;
-	// defaultPose = finger->getPositions();
-	// mController = dart::common::make_unique<Controller>(
-	// 	mWorld->getSkeleton("finger"),mTendon, JOINT_F);	
 }
 
 
@@ -277,28 +320,47 @@ void MyWindow::timeStepping()
 	mController->clearForces();
 	mController->addSPDForces();
 	// mController->addSPDTendonDirectionForces();
-	
-	if(mPreCountDown>0){
 
-		IkSolver ik;
-		Eigen::VectorXd newPose = hand->getPositions();
-		newPose+= ik.IKMiddle(pretarget, hand, "palm");
-		mController->setTargetPosition(newPose);
-
-		--mPreCountDown;
-		if(mPreCountDown == 0) mIKCountDown = grad_Iter;
+	if(flag1 < steps + 1){
+		Eigen::VectorXd pose = currentpose;	
+		for(int j = 0 ; j < targetpose.size();++j){
+			pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / steps;
+		}
+		mController->setTargetPosition(pose);
+		std::cout << "step 1" << std::endl;
+		std::cout << ball->getCOMLinearVelocity() << std::endl;
+		flag1++;
+	}
+	else if(flag2 < steps + 1){
+		Eigen::VectorXd new_pose = targetpose;
+		Eigen::VectorXd pose = targetpose;	
+		new_pose[2] =  -2.35619;
+		for(int j = 0 ; j < targetpose.size();++j){
+			pose[j] = targetpose[j] + (new_pose[j] - targetpose[j]) * flag2 / steps;
+		}
+		mController->setTargetPosition(pose);
+		// std::cout << "step 2" << std::endl;
+		// std::cout << ball->getCOMLinearVelocity() << std::endl;
+		flag2++;
+	}
+	else if(flag3 < steps + 1){
+		flag3++;
+		// std::cout << "step 3" << std::endl;
+		// std::cout << ball->getCOMLinearVelocity() << std::endl;
+	}
+	else if(flag4 < steps){
+		mController-> setTargetPosition(target_plus[flag4]);
+		// std::cout << "step 4" << std::endl;
+		// std::cout << ball->getCOMLinearVelocity() << std::endl;
+		flag4++;
+	}
+	else if (flag4 == steps) {
+		std::cout << "velocity is " << std::endl;
+		std::cout << ball->getCOMLinearVelocity() << std::endl;
+		flag4++;
 	}
 
-	if(mIKCountDown > 0){
-		IkSolver ik;
-		Eigen::VectorXd newPose = hand->getPositions();		
-		newPose += ik.IKMultiple(hand, Ends, mIKCountDown);
-		mController->setTargetPosition(newPose);
-		// mController->setTargetPosition(ik.TotalIk(Ends, hand));
-		--mIKCountDown;
-	}
-
-	if(mPoseCountDown >0)
+	if(mPoseCountDown >=0)
 	{
 		Eigen::VectorXd pose = currentpose;		
 		if(mPoseCountDown%50 == 0){			

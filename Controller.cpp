@@ -76,11 +76,11 @@ void Controller::addSPDForces(){
     mForces += p + d - mKd * qddot * mFinger->getTimeStep();
     mFinger->setForces(mForces);
 
-    std::cout << "Current pose and force " << std::endl;
-    std::cout << q[2] /rad << std::endl;
-    std::cout << mTargetPositions[2] / rad << std::endl;
-    std::cout << dq[2] << std::endl;
-    std::cout << mForces[2] << std::endl;
+    // std::cout << "Current pose and force " << std::endl;
+    // std::cout << q[2] /rad << std::endl;
+    // std::cout << mTargetPositions[2] / rad << std::endl;
+    // std::cout << dq[2] << std::endl;
+    // std::cout << mForces[2] << std::endl;
 }
 
 
@@ -186,9 +186,9 @@ double Controller::prevTorque(const Eigen::Vector3d current_point){
     return torque_sum;
 }
 
-Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isOpen){
+Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isGrabbed){
     Eigen::VectorXd pose = originalPose;
-    if(isOpen){
+    if(isGrabbed){
         // // for(int i = 6 ; i< 22 ; ++i){
         // //     pose[i] = 30.0* rad;
         // // }
@@ -196,11 +196,11 @@ Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isOpen
         // // pose[23] = -40.0 * rad;
         // // pose[24] = 30.0 * rad;
         for(int i = 0 ; i< 4 ; ++i){
-            pose[i*4 + 7] = 75.0* rad;
-            pose[i*4 + 8] = 70.0* rad;
-            pose[i*4 + 9] = 60.0* rad;
+            pose[i*4 + 7] = 60.0* rad;
+            pose[i*4 + 8] = 55.0* rad;
+            pose[i*4 + 9] = 70.0* rad;
         }
-        pose[22] = 90.0 * rad;
+        pose[22] = 100.0 * rad;
         pose[23] = -40.0 * rad;
         pose[24] = 30.0 * rad;
         pose[25] = 40.0 * rad;

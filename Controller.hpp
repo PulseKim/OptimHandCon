@@ -16,7 +16,7 @@ public:
 	void addPDForces();
 	void addSPDTendonForces();
 	void addSPDTendonDirectionForces();
-	Eigen::VectorXd grabOrOpen(Eigen::VectorXd originalPose,bool isOpen);
+	Eigen::VectorXd grabOrOpen(Eigen::VectorXd originalPose,bool isGrabbed);
 	double prevTorque(const Eigen::Vector3d current_point);
 
 

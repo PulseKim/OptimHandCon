@@ -93,7 +93,7 @@ void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 	cylinder->setPosition(3, -0);
 	cylinder->setPosition(4, 1.2);
 	cylinder->setPosition(5, -0);
-	bn->setFrictionCoeff(10.0);
+	bn->setFrictionCoeff(2.0);
 }
 
 

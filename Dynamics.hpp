@@ -18,6 +18,8 @@ public:
 	int combination(int n, int i);
 	double iterate(int index, int iter);
 	void optimize();
+	void initPose(Eigen::VectorXd initialPose);
+	std::vector<Eigen::VectorXd> poseGetter();
 
 protected:
 	WorldPtr mWorld;
