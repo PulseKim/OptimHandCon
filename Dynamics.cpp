@@ -70,8 +70,13 @@ double Dynamics::evaluateEnergy(std::vector<Eigen::VectorXd> target_pose)
 	}
 	Eigen::Vector3d v_ball = mBall->getCOMLinearVelocity();
 	double error = 0.0;
+	double weight = 3.0;
 	for(int i= 0; i<3; ++i)
-		error += (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
+		if(i ==1)
+			error += (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
+		else
+			error += weight * (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
+
 	// std::cout <<"velocity" << std::endl;
 	// std::cout << v_ball << std::endl;
 	// std::cout << error<<std::endl;
@@ -87,10 +92,10 @@ double Dynamics::iterate(int index, int iter)
 	Eigen::VectorXd controlPts = mControlPts[index];
 	Eigen::VectorXd controlPts_plus_eps = controlPts, controlPts_minus_eps = controlPts;
 	Eigen::VectorXd grad = Eigen::VectorXd::Zero(controlPts.rows());
-	double epslion = 0.01;
-	double lambda = 0.0005/ sqrt(iter);
+	double epslion = 0.005;
+	double lambda = 0.0002/ sqrt(iter);
 
-	Eigen::VectorXd e_left = Eigen::VectorXd::Zero(controlPts.rows());
+	double total_error = 0.0;
 
 	//Calculate gradient
 	for(int i = 0; i < controlPts_plus_eps.rows(); ++i){
@@ -119,21 +124,22 @@ double Dynamics::iterate(int index, int iter)
 		mBall->setPositions(p_ball);
 		mBall->setVelocities(v_ball);
 
-		e_left[i] = e_minus;
+		total_error += e_minus;
+		total_error += e_plus;
 		grad[i] = (e_plus - e_minus)/(epslion * 2) * lambda;
 		// std::cout << e_plus << "  "  << e_minus <<std::endl;
 	}
 
 	//Set control points and oldpositions
 	mControlPts[index] = (mControlPts[index] - grad);
-	// for(int i= 0 ; i < mControlPts.size();++i)
-	// {
-	// 	while(mControlPts[index][i] > M_PI) mControlPts[index][i] -= 2 * M_PI;
-	// 	while(mControlPts[index][i] < -M_PI) mControlPts[index][i] += 2 * M_PI;
-	// }
+	for(int i= 0 ; i < mControlPts[index].size();++i)
+	{
+		if(mControlPts[index][i] > M_PI) mControlPts[index][i] = M_PI;
+		else if(mControlPts[index][i] < -M_PI) mControlPts[index][i] =  - M_PI;
+	}
 	mOldPose = computePose(mControlPts[index], index);
 
-	return e_left.norm();
+	return total_error / 2;
 }
 
 //Pre-grabbing and move to the starting point
@@ -231,18 +237,18 @@ void Dynamics::optimize()
 		}
 
 	//Parameters
-		double epsilon = 0.001;
+		double epsilon = 0.01;
 		int mIter = 1000;
 
 	//Iterate for each control indexes
 	//Stop when error < epsilon or after some iteration number
 		for(int i = 1; i <= mIter; ++i){
+			std::cout << i <<"th iteration" <<std::endl;
 			for(int j = 0; j < control_index.size(); ++j){
 				double error = iterate(control_index[j], i);
 				std::cout << error << std::endl;
 				if(error < epsilon) break;
-			}
-			std::cout << i <<"th iteration" <<std::endl;
+			}	
 		}
 
 

@@ -24,6 +24,7 @@ Eigen::Vector3d pretarget;
 Eigen::VectorXd targetpose;
 Eigen::VectorXd currentpose;
 std::vector<Eigen::VectorXd> target_plus;
+Eigen::VectorXd controlPts;
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPoseCountDown(-1)
 {	
@@ -39,50 +40,51 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		mWorld->getSkeleton("hand"),tempTendon);
 
 	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 5.0, 0.0));
-	// dyn->optimize();
+	dyn->optimize();
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
-	// mPoseCountDown = default_countdown_movement;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
-	std::vector<Eigen::VectorXd> seriesPose;
-	steps = 1.0 / mWorld->getTimeStep();
-	int timingOpen = steps *  80/ 100;
-	for(int i = 0; i < timingOpen ; ++i)
-		seriesPose.push_back(targetpose);
-	for(int i = timingOpen; i < steps; ++i){
-		Eigen::VectorXd interpolate_pose = currentpose;
-		if (i < timingOpen + 5){
-			for(int j = 0; j < currentpose.size(); ++j)
-				interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
-		}
-		else
-			interpolate_pose = currentpose;
 
-		seriesPose.push_back(interpolate_pose);
-	}
+	// //From here we manually gives the output velocity.
+	// std::vector<Eigen::VectorXd> seriesPose;
+	// steps = 1.0 / mWorld->getTimeStep();
+	// int timingOpen = steps *  85/ 100;
+	// for(int i = 0; i < timingOpen ; ++i)
+	// 	seriesPose.push_back(targetpose);
+	// for(int i = timingOpen; i < steps; ++i){
+	// 	Eigen::VectorXd interpolate_pose = currentpose;
+	// 	if (i < timingOpen + 4){
+	// 		for(int j = 0; j < currentpose.size(); ++j)
+	// 			interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
+	// 	}
+	// 	else
+	// 		interpolate_pose = currentpose;
 
-	Eigen::VectorXd controlPts = Eigen::VectorXd::Zero(6);
-	controlPts[0] = -2.30182;
-	controlPts[1] = -2.16843;
-	controlPts[2] = -2.17809;
-	controlPts[3] = -1.45698;
-	controlPts[4] = -1.35552;
-	controlPts[5] = -1.5708;
+	// 	seriesPose.push_back(interpolate_pose);
+	// }
 
-	for(int i = 0; i< steps ; ++i){
-		Eigen::VectorXd tempPose = seriesPose[i];
-		double current_t = mWorld->getTimeStep() * i;
-		tempPose[2] = 0;
-		int m = controlPts.size();
-		for(int j =0; j < m; ++j){
-			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
-		}
-		target_plus.push_back(tempPose);		
-		// std::cout << tempPose[2]<<std::endl;
-	}
+	// controlPts = Eigen::VectorXd::Zero(6);
+	// controlPts[0] = -1.65678;
+	// controlPts[1] = -2.45232;
+	// controlPts[2] = -1.68291;
+	// controlPts[3] = -1.86831;
+	// controlPts[4] = -1.36636;
+	// controlPts[5] = -1.78318;
 
-	// target_plus = dyn->poseGetter();
+	// for(int i = 0; i< steps ; ++i){
+	// 	Eigen::VectorXd tempPose = seriesPose[i];
+	// 	double current_t = mWorld->getTimeStep() * i;
+	// 	tempPose[2] = 0;
+	// 	int m = controlPts.size();
+	// 	for(int j =0; j < m; ++j){
+	// 		tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
+	// 	}
+	// 	target_plus.push_back(tempPose);		
+	// 	// std::cout << tempPose[2]<<std::endl;
+	// }
+
+	target_plus = dyn->poseGetter();
 
 
 	// ik.IKSingleConfig(temporal, hand, 1);
@@ -211,7 +213,8 @@ void MyWindow::basicMovement(){
 	}
 }
 
-void MyWindow::initTendonFinger(){
+void MyWindow::initTendonFinger()
+{
 	std::string name = "z-axis";
 	std::size_t i;
 	for(i = 0 ; i < finger->getNumJoints()-1 ; ++i){
@@ -325,14 +328,14 @@ void MyWindow::timeStepping()
 			pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / steps;
 		}
 		mController->setTargetPosition(pose);
-		std::cout << "step 1" << std::endl;
-		std::cout << ball->getCOMLinearVelocity() << std::endl;
+		// std::cout << "step 1" << std::endl;
+		// std::cout << ball->getCOMLinearVelocity() << std::endl;
 		flag1++;
 	}
 	else if(flag2 < steps + 1){
 		Eigen::VectorXd new_pose = targetpose;
 		Eigen::VectorXd pose = targetpose;	
-		new_pose[2] =  -2.35619;
+		new_pose[2] =  controlPts[0];
 		for(int j = 0 ; j < targetpose.size();++j){
 			pose[j] = targetpose[j] + (new_pose[j] - targetpose[j]) * flag2 / steps;
 		}
