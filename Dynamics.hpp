@@ -3,6 +3,8 @@
 #include <dart/gui/gui.hpp>
 #include <dart/utils/utils.hpp>
 #include "Controller.hpp"
+#include <fstream>
+#include <string>
 
 using namespace dart::common;
 using namespace dart::simulation;
@@ -16,8 +18,10 @@ public:
 	std::vector<Eigen::VectorXd> computePose(const Eigen::VectorXd& controlPts, int index);
 	int factorial(int i);
 	int combination(int n, int i);
-	double iterate(int index, int iter);
-	void optimize();
+	double GDiterate(int index, int iter);
+	double SGDiterate(int index, int iter);
+	double lambdaLearning(int iter, double lambda);
+	void optimize(std::string name);
 	void initPose(Eigen::VectorXd initialPose);
 	std::vector<Eigen::VectorXd> poseGetter();
 

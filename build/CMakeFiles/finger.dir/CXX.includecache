@@ -49,6 +49,10 @@ dart/utils/utils.hpp
 -
 Controller.hpp
 /home/mrl/dart/tutorials/finger/Controller.hpp
+fstream
+-
+string
+-
 
 /home/mrl/dart/tutorials/finger/HandMaker.cpp
 HandMaker.hpp

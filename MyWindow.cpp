@@ -39,52 +39,54 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 5.0, 0.0));
-	dyn->optimize();
+	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 10.0, 0.0));
+	// dyn->optimize("Trial_10ms_SGD");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
 
-	// //From here we manually gives the output velocity.
-	// std::vector<Eigen::VectorXd> seriesPose;
-	// steps = 1.0 / mWorld->getTimeStep();
-	// int timingOpen = steps *  85/ 100;
-	// for(int i = 0; i < timingOpen ; ++i)
-	// 	seriesPose.push_back(targetpose);
-	// for(int i = timingOpen; i < steps; ++i){
-	// 	Eigen::VectorXd interpolate_pose = currentpose;
-	// 	if (i < timingOpen + 4){
-	// 		for(int j = 0; j < currentpose.size(); ++j)
-	// 			interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
-	// 	}
-	// 	else
-	// 		interpolate_pose = currentpose;
+	
+	std::vector<Eigen::VectorXd> seriesPose;
+	steps = 1.0 / mWorld->getTimeStep();
+	int timingOpen = steps *  85/ 100;
+	for(int i = 0; i < timingOpen ; ++i)
+		seriesPose.push_back(targetpose);
+	for(int i = timingOpen; i < steps; ++i){
+		Eigen::VectorXd interpolate_pose = currentpose;
+		if (i < timingOpen + 4){
+			for(int j = 0; j < currentpose.size(); ++j)
+				interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
+		}
+		else
+			interpolate_pose = currentpose;
 
-	// 	seriesPose.push_back(interpolate_pose);
-	// }
+		seriesPose.push_back(interpolate_pose);
+	}
 
-	// controlPts = Eigen::VectorXd::Zero(6);
-	// controlPts[0] = -1.65678;
-	// controlPts[1] = -2.45232;
-	// controlPts[2] = -1.68291;
-	// controlPts[3] = -1.86831;
-	// controlPts[4] = -1.36636;
-	// controlPts[5] = -1.78318;
+	//From here we manually gives the output velocity.
+	controlPts = Eigen::VectorXd::Zero(6);
+	controlPts[0] = -2.39305;
+	controlPts[1] = -2.19605;
+	controlPts[2] = -2.076;
+	controlPts[3] = -1.843;
+	controlPts[4] = -1.71848;
+	controlPts[5] = -1.54651;
 
-	// for(int i = 0; i< steps ; ++i){
-	// 	Eigen::VectorXd tempPose = seriesPose[i];
-	// 	double current_t = mWorld->getTimeStep() * i;
-	// 	tempPose[2] = 0;
-	// 	int m = controlPts.size();
-	// 	for(int j =0; j < m; ++j){
-	// 		tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
-	// 	}
-	// 	target_plus.push_back(tempPose);		
-	// 	// std::cout << tempPose[2]<<std::endl;
-	// }
+	for(int i = 0; i< steps ; ++i){
+		Eigen::VectorXd tempPose = seriesPose[i];
+		double current_t = mWorld->getTimeStep() * i;
+		tempPose[2] = 0;
+		int m = controlPts.size();
+		for(int j =0; j < m; ++j){
+			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
+		}
+		target_plus.push_back(tempPose);		
+		// std::cout << tempPose[2]<<std::endl;
+	}
+	 //This is the last line to be commentted
 
-	target_plus = dyn->poseGetter();
+	// target_plus = dyn->poseGetter();
 
 
 	// ik.IKSingleConfig(temporal, hand, 1);

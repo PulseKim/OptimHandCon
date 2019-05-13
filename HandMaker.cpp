@@ -2,6 +2,8 @@
 #include <iostream>
 #include <dart/dart.hpp>
 
+double finger_decay = 0.05;
+
 HandMaker::HandMaker(){
 	
 	//makeFingers();
@@ -59,13 +61,16 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 	double x_off = -palm_width / 2 + finger_width / 2 + (finger_width + gap) * idx;;
 	std::string name = "weld" + std::to_string(idx);	
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, finger_width, 0.0, palm_height/2, x_off);
+	bn->setMass(default_mass * finger_decay);
 	name = "univ" + std::to_string(idx);
 	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),30, -30, 100, 0);
+	bn->setMass(default_mass * finger_decay);
 	name = "revol_down" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
+	bn->setMass(default_mass * finger_decay);
 	name = "revol_up" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
-
+	bn->setMass(default_mass * finger_decay);
 }
 
 
@@ -73,13 +78,16 @@ void HandMaker::makeThumb(const SkeletonPtr& hand)
 {
 	std::string name = "thumb_weld";
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, thumb_width, 0.0, -thumb_height, palm_width/2);
+	bn->setMass(default_mass * finger_decay);
 	name = "thumb_ball";
 	bn = mSkel.makeEulerJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, weld_height/2, 0.0, 40, -40, 30, -30, 100, 0);
+	bn->setMass(default_mass * finger_decay);
 	name = "thumb_revol_down";
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
+	bn->setMass(default_mass * finger_decay);
 	name = "thumb_revol_up";
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, thumb_height, thumb_width, 0.0, thumb_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90, 0);
-
+	bn->setMass(default_mass * finger_decay);
 }
 
 
