@@ -20,10 +20,12 @@ public:
 	int combination(int n, int i);
 	double GDiterate(int index, int iter);
 	double SGDiterate(int index, int iter);
-	double lambdaLearning(int iter, double lambda);
+	int lambdaLearning(int iter, int lambda);
 	void optimize(std::string name);
 	void initPose(Eigen::VectorXd initialPose);
 	std::vector<Eigen::VectorXd> poseGetter();
+	void deleteCollisionAspect();
+	void addCollisionAspect();
 
 protected:
 	WorldPtr mWorld;

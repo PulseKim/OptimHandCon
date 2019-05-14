@@ -14,6 +14,7 @@ bool isOpen = true;
 int mIKCountDown = 0;
 int mPreCountDown = 0;
 int steps;
+int presteps;
 int flag1 = 1;
 int flag2 = 1;
 int flag3 = 1;
@@ -40,15 +41,18 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		mWorld->getSkeleton("hand"),tempTendon);
 
 	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 10.0, 0.0));
-	// dyn->optimize("Trial_10ms_SGD");
+	// dyn->optimize("Trial_simplified_10ms_GD");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
+	isOpen = false;
 
 	
 	std::vector<Eigen::VectorXd> seriesPose;
-	steps = 1.0 / mWorld->getTimeStep();
+	double T = 0.2;
+	steps = T / mWorld->getTimeStep();
+	presteps = 0.5 / mWorld->getTimeStep();
 	int timingOpen = steps *  85/ 100;
 	for(int i = 0; i < timingOpen ; ++i)
 		seriesPose.push_back(targetpose);
@@ -65,24 +69,25 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	}
 
 	//From here we manually gives the output velocity.
-	controlPts = Eigen::VectorXd::Zero(6);
-	controlPts[0] = -2.39305;
-	controlPts[1] = -2.19605;
-	controlPts[2] = -2.076;
-	controlPts[3] = -1.843;
-	controlPts[4] = -1.71848;
-	controlPts[5] = -1.54651;
+	controlPts = Eigen::VectorXd::Zero(3);
+	controlPts[0] = -1.87544;
+	controlPts[1] = -1.21095;
+	controlPts[2] = -2.77265;
+	// controlPts[3] = -1.843;
+	// controlPts[4] = -1.71848;
+	// controlPts[5] = -1.54651;
 
-	for(int i = 0; i< steps ; ++i){
+	for(int i = 0; i< steps; ++i){
 		Eigen::VectorXd tempPose = seriesPose[i];
 		double current_t = mWorld->getTimeStep() * i;
+		// double current_t = mWorld->getTimeStep() * i / T;
 		tempPose[2] = 0;
 		int m = controlPts.size();
 		for(int j =0; j < m; ++j){
 			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
 		}
 		target_plus.push_back(tempPose);		
-		// std::cout << tempPose[2]<<std::endl;
+		if(i == steps-1) std::cout << tempPose[2]<<std::endl;
 	}
 	 //This is the last line to be commentted
 
@@ -324,29 +329,29 @@ void MyWindow::timeStepping()
 	mController->addSPDForces();
 	// mController->addSPDTendonDirectionForces();
 
-	if(flag1 < steps + 1){
+	if(flag1 < presteps + 1){
 		Eigen::VectorXd pose = currentpose;	
 		for(int j = 0 ; j < targetpose.size();++j){
-			pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / steps;
+			pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / presteps;
 		}
 		mController->setTargetPosition(pose);
 		// std::cout << "step 1" << std::endl;
 		// std::cout << ball->getCOMLinearVelocity() << std::endl;
 		flag1++;
 	}
-	else if(flag2 < steps + 1){
+	else if(flag2 < presteps + 1){
 		Eigen::VectorXd new_pose = targetpose;
 		Eigen::VectorXd pose = targetpose;	
 		new_pose[2] =  controlPts[0];
 		for(int j = 0 ; j < targetpose.size();++j){
-			pose[j] = targetpose[j] + (new_pose[j] - targetpose[j]) * flag2 / steps;
+			pose[j] = targetpose[j] + (new_pose[j] - targetpose[j]) * flag2 / presteps;
 		}
 		mController->setTargetPosition(pose);
 		// std::cout << "step 2" << std::endl;
 		// std::cout << ball->getCOMLinearVelocity() << std::endl;
 		flag2++;
 	}
-	else if(flag3 < steps + 1){
+	else if(flag3 < presteps + 1){
 		flag3++;
 		// std::cout << "step 3" << std::endl;
 		// std::cout << ball->getCOMLinearVelocity() << std::endl;

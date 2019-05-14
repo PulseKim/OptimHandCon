@@ -3,7 +3,7 @@
 
 
 
-double T = 1.0;
+double T = 0.2;
 double step;
 int n;
 int target_frame;
@@ -46,7 +46,7 @@ std::vector<Eigen::VectorXd> Dynamics::computePose(const Eigen::VectorXd& contro
 	// std::cout << "target" <<std::endl;		
 	for(int i = 0; i< n ; ++i){
 		Eigen::VectorXd tempPose = mOldPose[i];
-		double current_t = step * i;
+		double current_t = step * i/T;
 		tempPose[index] = 0;
 		int m = controlPts.size();
 		for(int j =0; j < m; ++j){
@@ -91,7 +91,7 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 	Eigen::VectorXd pose = Eigen::VectorXd::Zero(mCharacter->getPositions().size());
 
 	//Grabbing
-	double preTime = 1.0;
+	double preTime = 0.5;
 	int preN = preTime / step;
 
 	for(int i = 1; i < preN+1 ; ++i){		
@@ -248,18 +248,17 @@ double Dynamics::SGDiterate(int index, int iter)
 	return total_error / 2;
 }
 
-double Dynamics::lambdaLearning(int iter, double lambda)
+int Dynamics::lambdaLearning(int iter, int lambda)
 {
-	std::cout << lambda << std::endl;
 	Eigen::VectorXd grab_pose = mOldPose[0];
-	double epsilon = 0.01;
-	double weight = 0.01;
-	double new_lambda = lambda;
-	double lambda_plus = lambda + epsilon, lambda_minus = lambda - epsilon;
-	double max_step = 0.04;
+	int epsilon = 5;
+	double weight = 2.0;
+	int new_lambda = lambda;
+	int lambda_plus = lambda + epsilon, lambda_minus = lambda - epsilon;
+	double max_step = 20;
 
-	if(lambda_plus > 1.0) lambda_plus = 1.0;
-	if(lambda_minus < 0.5) lambda_minus = 0.5;
+	if(lambda_plus > n-4) lambda_plus = n-4;
+	if(lambda_minus < n * 0.5) lambda_minus = n * 0.5;
 
 	std::vector<Eigen::VectorXd> target_plus, target_minus;
 
@@ -272,9 +271,9 @@ double Dynamics::lambdaLearning(int iter, double lambda)
 
 	for(int i = lambda_plus; i < n; ++i){
 		Eigen::VectorXd interpolate_pose = mOldPose[i];
-		if(i < lambda + 5)
+		if(i < lambda_plus + 5)
 			for(int j = 6; j < p.size(); ++j)
-				interpolate_pose[j] = p[j] + (grab_pose[j] - p[j]) * (lambda+4-i) / 4;
+				interpolate_pose[j] = p[j] + (grab_pose[j] - p[j]) * (lambda_plus+4-i) / 4;
 		else
 			interpolate_pose = p;
 		target_plus.push_back(interpolate_pose);
@@ -288,9 +287,9 @@ double Dynamics::lambdaLearning(int iter, double lambda)
 
 	for(int i = lambda_minus; i < n; ++i){
 		Eigen::VectorXd interpolate_pose = mOldPose[i];
-		if(i < lambda + 5)
+		if(i < lambda_minus + 5)
 			for(int j = 6; j < p.size(); ++j)
-				interpolate_pose[j] = p[j] + (grab_pose[j] - p[j]) * (lambda+4-i) / 4;
+				interpolate_pose[j] = p[j] + (grab_pose[j] - p[j]) * (lambda_minus+4-i) / 4;
 		else
 			interpolate_pose = p;
 		target_minus.push_back(interpolate_pose);
@@ -312,18 +311,39 @@ double Dynamics::lambdaLearning(int iter, double lambda)
 	mBall->setPositions(p_ball);
 	mBall->setVelocities(v_ball);
 
-	double step = (e_plus - e_minus) / (2 * epsilon) * weight;
+	int step = (e_plus - e_minus) / (2 * epsilon) * weight;
 	if(step > max_step) step = max_step;
 	if(step < -max_step) step = -max_step;
 	new_lambda -= step;
-	std::cout << (e_plus + e_minus) / 2 << std::endl;
 
+	for(int i = 0; i < new_lambda; ++i){
+		Eigen::VectorXd pose = mOldPose[i];
+		for(int j = 6; j < grab_pose.size(); ++j)
+			pose[j] = grab_pose[j];
+		mOldPose[i] = pose;
+	}
+
+	for(int i = new_lambda; i < n; ++i){
+		Eigen::VectorXd interpolate_pose = mOldPose[i];
+		if(i < new_lambda + 5)
+			for(int j = 6; j < p.size(); ++j)
+				interpolate_pose[j] = p[j] + (grab_pose[j] - p[j]) * (new_lambda+4-i) / 4;
+		else
+			interpolate_pose = p;
+		mOldPose[i] = interpolate_pose;
+	}
+	std::cout << "lambda learning error : ";
+	std::cout << (e_plus + e_minus) / 2 << std::endl;
+	std::cout << "new lambda is " << new_lambda << std::endl;
 	return new_lambda;
 }
 
 
 void Dynamics::optimize(std::string name)
 {
+	//Delete collision aspects
+	// deleteCollisionAspect();
+
 	//Values saved to be initialized
 	p = mCharacter->getPositions();
 	v = mCharacter->getVelocities();
@@ -340,7 +360,7 @@ void Dynamics::optimize(std::string name)
 	Eigen::VectorXd pose = mCharacter->getPositions();
 	Eigen::VectorXd grab_pose = mController->grabOrOpen(pose, true);
 
-	int numb_control = 6;
+	int numb_control = 3;
 	mControlPts.clear();
 	for(int i = 0; i < pose.size(); ++i)
 		mControlPts.push_back(Eigen::VectorXd::Zero(numb_control));
@@ -384,6 +404,7 @@ void Dynamics::optimize(std::string name)
 			std::cout << error << std::endl;
 			if(error < epsilon) break;
 		}	
+		// lambda = lambdaLearning(i, lambda);
 	}
 
 	double final_error;
@@ -403,6 +424,7 @@ void Dynamics::optimize(std::string name)
 		std::cout << mControlPts[control_index[i]] << std::endl;
 		outFile << mControlPts[control_index[i]] << std::endl;
 	}
+	// addCollisionAspect();
 	outFile << "The error is " << std::endl;
 	outFile << final_error << std::endl;
 	outFile.close();
@@ -415,3 +437,67 @@ std::vector<Eigen::VectorXd> Dynamics::poseGetter()
 }
 
 
+void Dynamics::deleteCollisionAspect()
+{
+	bool flag = false;
+	BodyNode* bn = mCharacter->getBodyNode("root");
+	auto colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("arm_ball");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("arm_univ");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("thumb_ball");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("thumb_revol_down");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+
+	for(int idx = 0 ; idx < 4 ; ++idx)
+	{
+		bn = mCharacter->getBodyNode("weld" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+		bn = mCharacter->getBodyNode("univ" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+		bn = mCharacter->getBodyNode("revol_down" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	}
+}
+void Dynamics::addCollisionAspect()
+{
+	bool flag = true;
+	BodyNode* bn = mCharacter->getBodyNode("root");
+	auto colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("arm_ball");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("arm_univ");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("thumb_ball");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	bn = mCharacter->getBodyNode("thumb_revol_down");
+	colNodes = bn->getShapeNodesWith<CollisionAspect>();
+	colNodes[0]->getCollisionAspect()->setCollidable(flag);
+
+	for(int idx = 0 ; idx < 4 ; ++idx)
+	{
+		bn = mCharacter->getBodyNode("weld" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+		bn = mCharacter->getBodyNode("univ" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+		bn = mCharacter->getBodyNode("revol_down" + std::to_string(idx));
+		colNodes = bn->getShapeNodesWith<CollisionAspect>();
+		colNodes[0]->getCollisionAspect()->setCollidable(flag);
+	}
+}
