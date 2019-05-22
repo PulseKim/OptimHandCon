@@ -26,6 +26,8 @@ Eigen::VectorXd targetpose;
 Eigen::VectorXd currentpose;
 std::vector<Eigen::VectorXd> target_plus;
 Eigen::VectorXd controlPts;
+Eigen::VectorXd controlPts2;
+
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPoseCountDown(-1)
 {	
@@ -40,20 +42,19 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 10.0, 0.0));
-	// dyn->optimize("Trial_simplified_10ms_GD");
+	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 3.5, 0.0));
+	dyn->optimize("Two_Ctrl_3_5_stepping_Trial2");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
 	targetpose = mController->grabOrOpen(currentpose, isOpen);
 	isOpen = false;
 
-	
 	std::vector<Eigen::VectorXd> seriesPose;
 	double T = 0.2;
 	steps = T / mWorld->getTimeStep();
-	presteps = 0.5 / mWorld->getTimeStep();
-	int timingOpen = steps *  85/ 100;
+	presteps = 0.2 / mWorld->getTimeStep();
+	int timingOpen = steps *  90/ 100;
 	for(int i = 0; i < timingOpen ; ++i)
 		seriesPose.push_back(targetpose);
 	for(int i = timingOpen; i < steps; ++i){
@@ -68,67 +69,62 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		seriesPose.push_back(interpolate_pose);
 	}
 
-	//From here we manually gives the output velocity.
-	controlPts = Eigen::VectorXd::Zero(3);
-	controlPts[0] = -1.87544;
-	controlPts[1] = -1.21095;
-	controlPts[2] = -2.77265;
-	// controlPts[3] = -1.843;
-	// controlPts[4] = -1.71848;
-	// controlPts[5] = -1.54651;
+	// //From here we manually gives the output velocity.
+	// controlPts = Eigen::VectorXd::Zero(3);
+	// controlPts[0] = -2.60283;
+	// controlPts[1] = -2.06987;
+	// controlPts[2] =   -1.3527;
 
-	for(int i = 0; i< steps; ++i){
-		Eigen::VectorXd tempPose = seriesPose[i];
-		double current_t = mWorld->getTimeStep() * i;
-		// double current_t = mWorld->getTimeStep() * i / T;
-		tempPose[2] = 0;
-		int m = controlPts.size();
-		for(int j =0; j < m; ++j){
-			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j); 
-		}
-		target_plus.push_back(tempPose);		
-		if(i == steps-1) std::cout << tempPose[2]<<std::endl;
-	}
-	 //This is the last line to be commentted
+	// controlPts2 = Eigen::VectorXd::Zero(3);
+	// controlPts2[0] = -0.507305;
+	// controlPts2[1] = -0.252843;
+	// controlPts2[2] = 0.0537361;
 
-	// target_plus = dyn->poseGetter();
+	// // controlPts[3] = -1.843;
+	// // controlPts[4] = -1.71848;
+	// // controlPts[5] = -1.54651;
+
+	// for(int i = 0; i< steps; ++i){
+	// 	Eigen::VectorXd tempPose = seriesPose[i];
+	// 	// double current_t = mWorld->getTimeStep() * i;
+	// 	double current_t = mWorld->getTimeStep() * i / T;
+	// 	tempPose[2] = 0;
+	// 	tempPose[5] = 0;
+	// 	int m = controlPts.size();
+	// 	for(int j =0; j < m; ++j){
+	// 		tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
+	// 		tempPose[5] += controlPts2[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);  
+	// 	}
+	// 	target_plus.push_back(tempPose);		
+	// }
+	//  // This is the last line to be commentted
+
+	setPretarget();
+
+	target_plus = dyn->poseGetter();
 
 
-	// ik.IKSingleConfig(temporal, hand, 1);
-	// targetMovement();
-	// setPretarget();
-	// setTarget();
-
-	// initSkeletonFinger();    
-	// initTendonFinger();
 }
 
 
 void MyWindow::setPretarget(){
-	Eigen::Vector3d cylPose = ball->getCOM();
-	pretarget[0] = cylPose[0]+ 0.3;
-	pretarget[1] = cylPose[1]+ 5.5;
-	pretarget[2] = cylPose[2];
+	Eigen::VectorXd pose = hand->getPositions();
+	for(int i = 0 ; i< 4 ; ++i){
+		pose[i*4 + 7] = radian(66.0);
+		pose[i*4 + 8] = radian(45.0);
+		pose[i*4 + 9] = radian(60.0);
+	}
+	pose[22] = radian(90.0);
+	pose[23] = radian(-40.0);
+	pose[24] = radian(30.0);
+	pose[25] = radian(40.0);
+	pose[26] = radian(30.0);
+	hand->setPositions(pose);
 }
 
 void MyWindow::setTarget(){
-	// for(int i = 0; i < 4 ; ++i){
-	// 	point.push_back(Eigen::Vector3d(hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[0]-2.0-i*0.3, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[1]-1.0-0.2*i, hand->getBodyNode("revol_up" + std::to_string(i))->getCOM()[2]));
-	// 	Ends.push_back(std::make_pair(point[i] ,i));
-	// 	//std::cout<<point[i] <<std::endl;
-	// }
-	// point.push_back(Eigen::Vector3d(hand->getBodyNode("thumb_revol_up")->getCOM()[0]-1.0,hand->getBodyNode("thumb_revol_up")->getCOM()[1]-0.5, hand->getBodyNode("thumb_revol_up")->getCOM()[2]));
-	// Ends.push_back(std::make_pair(point[4],4));
 
-	Eigen::Vector3d cylPose = ball->getCOM();
-	double pointy = cylPose[1] + 1.2;
-	double theta = radian(60);
-	double offset = radian(-10);
-	int i;
-	for(i = 0; i < 5; ++i){
-		point.push_back(Eigen::Vector3d(cylPose[0]-1.35*sin(theta*i+offset), pointy, cylPose[2] - 1.35*cos(theta*i+offset)));
-		Ends.push_back(std::make_pair(point[i] ,i));
-	}
+
 }
 
 void MyWindow::initSkeleton(){
@@ -139,7 +135,7 @@ void MyWindow::initSkeleton(){
 	SkelParser skelP;
 	skelP.makeFloor(floor, "floor");
 	// skelP.makeBall(ball);
-	skelP.makeCylinder(ball);
+	skelP.makeCylinder(ball, 0.03, 0.03);
 
 	HandMaker handMaker;
 	handMaker.makeHand(hand);
@@ -154,11 +150,13 @@ void MyWindow::initSkeleton(){
 
 void MyWindow::poseSetter()
 {
+	double off = 0.008;
 	Eigen::VectorXd pose = hand->getPositions();
 	pose[2] = radian(-90);
 	hand->setPositions(pose);
-	ball->setPosition(3, hand->getBodyNode("palm")->getCOM()[0]);
-	ball->setPosition(4, 0.9);
+	ball->setPosition(3, hand->getBodyNode("palm")->getCOM()[0] + off);
+	// ball->setPosition(3, 10.0);
+	// ball->setPosition(4, 0.9);
 	//ball->setPosition(5, 0.001);
 }
 
@@ -329,20 +327,18 @@ void MyWindow::timeStepping()
 	mController->addSPDForces();
 	// mController->addSPDTendonDirectionForces();
 
-	if(flag1 < presteps + 1){
-		Eigen::VectorXd pose = currentpose;	
-		for(int j = 0 ; j < targetpose.size();++j){
-			pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / presteps;
-		}
-		mController->setTargetPosition(pose);
-		// std::cout << "step 1" << std::endl;
-		// std::cout << ball->getCOMLinearVelocity() << std::endl;
-		flag1++;
-	}
-	else if(flag2 < presteps + 1){
-		Eigen::VectorXd new_pose = targetpose;
+	// if(flag1 < presteps + 1){
+	// 	Eigen::VectorXd pose = currentpose;	
+	// 	for(int j = 0 ; j < targetpose.size();++j){
+	// 		pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * flag1 / presteps;
+	// 	}
+	// 	mController->setTargetPosition(pose);
+	// 	flag1++;
+	// }
+	// else if(flag1 < presteps * 2) flag1++;
+	if(flag2 < presteps + 1){
+		Eigen::VectorXd new_pose = target_plus[0];
 		Eigen::VectorXd pose = targetpose;	
-		new_pose[2] =  controlPts[0];
 		for(int j = 0 ; j < targetpose.size();++j){
 			pose[j] = targetpose[j] + (new_pose[j] - targetpose[j]) * flag2 / presteps;
 		}
@@ -351,11 +347,17 @@ void MyWindow::timeStepping()
 		// std::cout << ball->getCOMLinearVelocity() << std::endl;
 		flag2++;
 	}
-	else if(flag3 < presteps + 1){
-		flag3++;
-		// std::cout << "step 3" << std::endl;
-		// std::cout << ball->getCOMLinearVelocity() << std::endl;
-	}
+	// else if(flag3 < presteps + 1){
+	// 	flag3++;
+	// 	if(flag3 == presteps){
+	// 		std::cout << "ball position" << std::endl;
+	// 		std::cout << ball->getPositions() <<std::endl;
+	// 		std::cout << "hand position" << std::endl;
+	// 		std::cout << hand->getBodyNode("palm")->getCOM() <<std::endl;
+	// 	}
+	// 	// std::cout << "step 3" << std::endl;
+	// 	// std::cout << ball->getCOMLinearVelocity() << std::endl;
+	// }
 	else if(flag4 < steps){
 		mController-> setTargetPosition(target_plus[flag4]);
 		// std::cout << "step 4" << std::endl;
@@ -372,7 +374,7 @@ void MyWindow::timeStepping()
 	{
 		Eigen::VectorXd pose = currentpose;		
 		if(mPoseCountDown%50 == 0){			
-			for(int i =0; i<targetpose.size();++i)
+			for(int i =6; i<targetpose.size();++i)
 				pose[i] = currentpose[i] + (targetpose[i] - currentpose[i]) * (default_countdown_movement - mPoseCountDown) / default_countdown_movement;
 			mController->setTargetPosition(pose);
 		}

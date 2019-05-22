@@ -17,7 +17,7 @@ void HandMaker::makeHand(const SkeletonPtr& hand){
 	mPalm = makePalm(hand, arm);
 	makeFingers(hand);
 	makeThumb(hand);
-	mSkel.setGeometry(hand, "thumb_ball", 50.0, 0);
+	mSkel.setGeometry(hand, "thumb_ball", 60.0, 0);
 	mSkel.setGeometry(hand, "thumb_ball", -30.0, 1);
 	mSkel.setGeometry(hand, "thumb_ball", 30.0, 2);
 	//mSkel.setGeometry(hand, "thumb_revol_down", 15.0, 0);
@@ -36,6 +36,7 @@ BodyNode* HandMaker::makePalm(const SkeletonPtr& hand, BodyNode* arm)
 	std::string name = "palm";
 	BodyNode* bn;
 	bn = mSkel.makeRevoluteJoint(hand, arm, name, hand_z, palm_height, palm_width, 0.0, arm_height/2, 0.0, Eigen::Vector3d::UnitZ(), 90.0, -60.0);
+	bn->setFrictionCoeff(0.2);
 	return bn;	
 }
 
@@ -62,15 +63,19 @@ void HandMaker::makeSingleFinger(const SkeletonPtr& hand, int idx)
 	std::string name = "weld" + std::to_string(idx);	
 	BodyNode* bn = mSkel.makeWeldJoint(hand, mPalm, name, hand_z, weld_height, finger_width, 0.0, palm_height/2, x_off);
 	bn->setMass(default_mass * finger_decay);
+	bn->setFrictionCoeff(0.2);
 	name = "univ" + std::to_string(idx);
 	bn = mSkel.makeUniversalJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, weld_height/2, 0.0, Eigen::Vector3d::UnitX(), Eigen::Vector3d::UnitZ(),30, -30, 100, 0);
 	bn->setMass(default_mass * finger_decay);
+	bn->setFrictionCoeff(0.2);
 	name = "revol_down" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
 	bn->setMass(default_mass * finger_decay);
+	bn->setFrictionCoeff(0.2);
 	name = "revol_up" + std::to_string(idx);
 	bn = mSkel.makeRevoluteJoint(hand, bn, name, hand_z, finger_height, finger_width, 0.0, finger_height/2, 0.0, Eigen::Vector3d::UnitZ(), 100, 0);
 	bn->setMass(default_mass * finger_decay);
+	bn->setFrictionCoeff(0.2);
 }
 
 

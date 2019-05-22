@@ -26,7 +26,8 @@ public:
 	std::vector<Eigen::VectorXd> poseGetter();
 	void deleteCollisionAspect();
 	void addCollisionAspect();
-
+	double radian(double angle);
+	
 protected:
 	WorldPtr mWorld;
 	SkeletonPtr mBall;

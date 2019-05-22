@@ -13,7 +13,7 @@ using namespace dart::gui::glut;
 using namespace dart::math;
 
 const int default_countdown = 100;
-const int default_countdown_movement = 1000;
+const int default_countdown_movement = 200;
 const double default_force = 500.0;
 
 

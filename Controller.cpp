@@ -9,7 +9,7 @@ using namespace dart::dynamics;
 using namespace dart::math;
 
 
-const double mag_Kp = 3000;
+const double mag_Kp = 400;
 const double mag_Kd = 2 * std::sqrt(mag_Kp);
 int count = 5;
 const double rad = M_PI /180.0;
@@ -28,9 +28,19 @@ void Controller::jointControlSetter(){
     mKp = Eigen::MatrixXd::Identity(nDofs, nDofs);
     mKd = Eigen::MatrixXd::Identity(nDofs, nDofs);
 
-    for(std::size_t i = 0; i < nDofs; ++i){
+    for(std::size_t i = 0; i < 6; ++i){
       mKp(i,i) = mag_Kp;
       mKd(i,i) = mag_Kd;
+    }
+    for(std::size_t i = 6; i < 21; ++i){
+      double mag_new = mag_Kp/2;
+      mKp(i,i) = mag_new;
+      mKd(i,i) = 2*std::sqrt(mag_new);
+    }
+    for(std::size_t i = 21; i < nDofs; ++i){
+      double mag_new = mag_Kp/6;
+      mKp(i,i) = mag_new;
+      mKd(i,i) = 2*std::sqrt(mag_new);
     }
   Controller::setTargetPosition(mFinger->getPositions());
 }
@@ -196,11 +206,11 @@ Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isGrab
         // // pose[23] = -40.0 * rad;
         // // pose[24] = 30.0 * rad;
         for(int i = 0 ; i< 4 ; ++i){
-            pose[i*4 + 7] = 60.0* rad;
-            pose[i*4 + 8] = 55.0* rad;
-            pose[i*4 + 9] = 70.0* rad;
+            pose[i*4 + 7] = 66.0* rad;
+            pose[i*4 + 8] = 45.0* rad;
+            pose[i*4 + 9] = 68.0* rad;
         }
-        pose[22] = 100.0 * rad;
+        pose[22] = 90.0 * rad;
         pose[23] = -40.0 * rad;
         pose[24] = 30.0 * rad;
         pose[25] = 40.0 * rad;

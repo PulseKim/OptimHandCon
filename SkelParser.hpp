@@ -11,7 +11,7 @@ using namespace dart::math;
 
 const double default_link_len = 2.0;
 const double default_width = 0.5;
-const double default_mass = 0.01;
+const double default_mass = 0.10;
 
 class SkelParser{
 public:
@@ -22,7 +22,7 @@ public:
   
   void makeFloor(const SkeletonPtr& floor, const std::string& name);
   void makeBall(const SkeletonPtr& floor);
-  void makeCylinder(const SkeletonPtr& cylinder);
+  void makeCylinder(const SkeletonPtr& cylinder,double rad, double height);
   void makeFinger(const SkeletonPtr& skel);
   void setGeometry(const SkeletonPtr& skel, const std::string& name, int degree, int dof);
 

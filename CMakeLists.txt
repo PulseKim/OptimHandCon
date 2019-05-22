@@ -20,5 +20,5 @@ include_directories(${OPENGL_INCLUDE_DIR})
 include_directories(${GLUT_INCLUDE_DIR})
 file(GLOB srcs "*.h" "*.cpp")
 
-add_executable(finger ${srcs})
-target_link_libraries(finger ${DART_LIBRARIES} GL GLU glut)
+add_executable(hand ${srcs})
+target_link_libraries(hand ${DART_LIBRARIES} GL GLU glut)

@@ -60,39 +60,39 @@ CMAKE_SOURCE_DIR = /home/mrl/dart/tutorials/finger
 CMAKE_BINARY_DIR = /home/mrl/dart/tutorials/finger/build
 
 #=============================================================================
-# Target rules for target CMakeFiles/finger.dir
+# Target rules for target CMakeFiles/hand.dir
 
 # All Build rule for target.
-CMakeFiles/finger.dir/all:
-	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/depend
-	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target finger"
-.PHONY : CMakeFiles/finger.dir/all
+CMakeFiles/hand.dir/all:
+	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/depend
+	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/build
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/mrl/dart/tutorials/finger/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9 "Built target hand"
+.PHONY : CMakeFiles/hand.dir/all
 
 # Include target in all.
-all: CMakeFiles/finger.dir/all
+all: CMakeFiles/hand.dir/all
 
 .PHONY : all
 
 # Build rule for subdir invocation for target.
-CMakeFiles/finger.dir/rule: cmake_check_build_system
+CMakeFiles/hand.dir/rule: cmake_check_build_system
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/mrl/dart/tutorials/finger/build/CMakeFiles 9
-	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/finger.dir/all
+	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/hand.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/mrl/dart/tutorials/finger/build/CMakeFiles 0
-.PHONY : CMakeFiles/finger.dir/rule
+.PHONY : CMakeFiles/hand.dir/rule
 
 # Convenience name for target.
-finger: CMakeFiles/finger.dir/rule
+hand: CMakeFiles/hand.dir/rule
 
-.PHONY : finger
-
-# clean rule for target.
-CMakeFiles/finger.dir/clean:
-	$(MAKE) -f CMakeFiles/finger.dir/build.make CMakeFiles/finger.dir/clean
-.PHONY : CMakeFiles/finger.dir/clean
+.PHONY : hand
 
 # clean rule for target.
-clean: CMakeFiles/finger.dir/clean
+CMakeFiles/hand.dir/clean:
+	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/clean
+.PHONY : CMakeFiles/hand.dir/clean
+
+# clean rule for target.
+clean: CMakeFiles/hand.dir/clean
 
 .PHONY : clean
 

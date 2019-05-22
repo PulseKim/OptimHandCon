@@ -5,18 +5,17 @@
 #include "SkelParser.hpp"
 #include "Tendon.hpp"
 
-const double finger_width = 0.5;
-const double finger_height = 1.0;
-const double weld_height = 0.2;
-const double gap = 0.2;
-const double palm_width = 2.6;
-const double palm_height = 3.0;
-const double thumb_width = 0.7;
-const double thumb_height = 1.0;
-const double hand_z = 0.5;
-const double hand_offset = -2.0;
-const double arm_width = 2.0;
-const double arm_height =4.0;
+const double finger_width = 0.018;
+const double finger_height = 0.032;
+const double weld_height = 0.001;
+const double gap = 0.002;
+const double palm_width = 0.08;
+const double palm_height = 0.1;
+const double thumb_width = 0.02;
+const double thumb_height = 0.03;
+const double hand_z = 0.03;
+const double arm_width = 0.065;
+const double arm_height = 0.3;
 
 
 class HandMaker{

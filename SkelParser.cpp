@@ -65,14 +65,14 @@ void SkelParser::makeBall(const SkeletonPtr& ball)
 }
 
 
-void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
+void SkelParser::makeCylinder(const SkeletonPtr& cylinder, double rad, double height)
 {
  	//Shape
-	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(1.0, 1.2));
+	ShapePtr shape = std::shared_ptr<CylinderShape>(new CylinderShape(rad, height));
 	//Inertia
 	double mass = default_mass;
 	dart::dynamics::Inertia inertia;
-	inertia.setMass(default_mass*1.0);
+	inertia.setMass(default_mass*0.05);
 	inertia.setMoment(shape->computeInertia(mass));
 
 	//Joint Parsing
@@ -91,9 +91,9 @@ void SkelParser::makeCylinder(const SkeletonPtr& cylinder)
 
 	cylinder->setPosition(0, 90.0* M_PI /180);
 	cylinder->setPosition(3, -0);
-	cylinder->setPosition(4, 1.2);
+	cylinder->setPosition(4, height + 0.003);
 	cylinder->setPosition(5, -0);
-	bn->setFrictionCoeff(2.0);
+	bn->setFrictionCoeff(0.2);
 }
 
 

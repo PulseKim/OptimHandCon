@@ -7,11 +7,26 @@ double T = 0.2;
 double step;
 int n;
 int target_frame;
+double prev_error;
+int local = 0;
 Eigen::VectorXd p;
 Eigen::VectorXd v;
 Eigen::VectorXd p_ball;
 Eigen::VectorXd v_ball;
 
+std::chrono::time_point<std::chrono::system_clock> time_check_s = std::chrono::system_clock::now();
+
+void time_check_start()
+{
+	time_check_s = std::chrono::system_clock::now();
+}
+
+void time_check_end()
+{
+	std::chrono::duration<double> elapsed_seconds;
+	elapsed_seconds = std::chrono::system_clock::now()-time_check_s;
+	std::cout<<"time elapsed: " << elapsed_seconds.count()<<std::endl;
+}
 
 Dynamics::Dynamics(const WorldPtr& world, const Eigen::Vector3d& v_in): mWorld(world), v_target(v_in)
 {
@@ -61,7 +76,7 @@ std::vector<Eigen::VectorXd> Dynamics::computePose(const Eigen::VectorXd& contro
 
 double Dynamics::evaluateEnergy(std::vector<Eigen::VectorXd> target_pose)
 {	
-	
+
 	for(int i = 0; i< n ; ++i){
 		mController-> setTargetPosition(target_pose[i]);
 		mController->clearForces();
@@ -70,18 +85,22 @@ double Dynamics::evaluateEnergy(std::vector<Eigen::VectorXd> target_pose)
 	}
 	Eigen::Vector3d v_ball = mBall->getCOMLinearVelocity();
 	double error = 0.0;
-	double weight = 3.0;
+	double weight = 2.0;
 	for(int i= 0; i<3; ++i)
-		if(i ==1)
+		if(i ==1){
 			error += (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
+			// std::cout << "vel: " << v_ball[i] << std::endl;
+		}
 		else
 			error += weight * (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
-
-	// std::cout <<"velocity" << std::endl;
-	// std::cout << v_ball << std::endl;
-	// std::cout << error<<std::endl;
 	return error;
 }
+
+double Dynamics::radian(double angle){
+	double rad = angle * M_PI / 180;
+	return rad;
+}
+
 
 //Pre-grabbing and move to the starting point
 void Dynamics::initPose(Eigen::VectorXd initialPose)
@@ -91,24 +110,42 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 	Eigen::VectorXd pose = Eigen::VectorXd::Zero(mCharacter->getPositions().size());
 
 	//Grabbing
-	double preTime = 0.5;
+	double preTime = 0.2;
 	int preN = preTime / step;
 
-	for(int i = 1; i < preN+1 ; ++i){		
-		for(int j = 0; j < pose.size() ; ++j){
-			pose[j] = current[j] + (grabbed[j] - current[j]) * i / preN;
-		}
-		mController->clearForces();
-		mController->addSPDForces();
-		mController->setTargetPosition(pose);
-		mWorld->step();
-		// std::cout << mBall->getCOMLinearVelocity() << std::endl;
+	// for(int i = 1; i < preN+1 ; ++i){		
+	// 	for(int j = 0; j < pose.size() ; ++j){
+	// 		pose[j] = current[j] + (grabbed[j] - current[j]) * i / preN;
+	// 	}
+	// 	mController->clearForces();
+	// 	mController->addSPDForces();
+	// 	mController->setTargetPosition(pose);
+	// 	mWorld->step();
+	// 	// std::cout << mBall->getCOMLinearVelocity() << std::endl;
+	// }
+
+	// //Wait for stable status
+	// for(int i = 0; i < preN; ++i){
+	// 	mController->clearForces();
+	// 	mController->addSPDForces();
+	// 	mWorld->step();
+	// }
+	// //Go to first position step by step
+
+	Eigen::VectorXd pose_init = mCharacter->getPositions();
+	for(int i = 0 ; i< 4 ; ++i){
+		pose_init[i*4 + 7] = radian(66.0);
+		pose_init[i*4 + 8] = radian(45.0);
+		pose_init[i*4 + 9] = radian(60.0);
 	}
-	
-	//Go to first position step by step
+	pose_init[22] = radian(90.0);
+	pose_init[23] = radian(-40.0);
+	pose_init[24] = radian(30.0);
+	pose_init[25] = radian(40.0);
+	pose_init[26] = radian(30.0);
+	mCharacter->setPositions(pose_init);
 
 	for(int i = 1; i < preN+1 ; ++i){
-		
 		for(int j = 0; j < pose.size() ; ++j){
 			pose[j] = grabbed[j] + (initialPose[j] - grabbed[j]) * i / preN;
 		}
@@ -116,15 +153,16 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 		mController->addSPDForces();
 		mController->setTargetPosition(pose);
 		mWorld->step();
-	}
 
-	//Wait for stable status
-	for(int i = 0; i < preN; ++i){
-		mController->clearForces();
-		mController->addSPDForces();
-		mWorld->step();
 	}
+	// std::cout << mBall->getPositions() << std::endl;
 
+	// //Wait for stable status
+	// for(int i = 0; i < preN; ++i){
+	// 	mController->clearForces();
+	// 	mController->addSPDForces();
+	// 	mWorld->step();
+	// }
 }
 
 
@@ -132,14 +170,14 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 double Dynamics::GDiterate(int index, int iter)
 {
 	
-	std::cout << mControlPts[index] <<std::endl;
+	// std::cout << mControlPts[index] <<std::endl;
 
 	//Setting Control points
 	Eigen::VectorXd controlPts = mControlPts[index];
 	Eigen::VectorXd controlPts_plus_eps = controlPts, controlPts_minus_eps = controlPts;
 	Eigen::VectorXd grad = Eigen::VectorXd::Zero(controlPts.rows());
-	double epsilon = 0.005;
-	double lambda = 0.0002/ sqrt(iter);
+	double epsilon = 0.008;
+	double lambda = 0.05;
 
 	double total_error = 0.0;
 	double max_angle_step = 0.4;
@@ -155,8 +193,14 @@ double Dynamics::GDiterate(int index, int iter)
 		std::vector<Eigen::VectorXd> target_plus = computePose(controlPts_plus_eps, index);
 		std::vector<Eigen::VectorXd> target_minus = computePose(controlPts_minus_eps, index);
 		
+		// std::cout << "init " << std::endl;
+		// time_check_start();
 		initPose(target_plus[0]);
+		// time_check_end();
+		// std::cout << "energy" <<std::endl;
+		// time_check_start();
 		double e_plus = evaluateEnergy(target_plus);
+		// time_check_end();
 		mWorld->reset();
 		mCharacter->setPositions(p);
 		mCharacter->setVelocities(v);
@@ -171,25 +215,54 @@ double Dynamics::GDiterate(int index, int iter)
 		mBall->setPositions(p_ball);
 		mBall->setVelocities(v_ball);
 
-		total_error += e_minus;
-		total_error += e_plus;
-		grad[i] = (e_plus - e_minus)/(epsilon * 2) * lambda;
-		if(grad[i] > max_angle_step) grad[i] = max_angle_step;
-		if(grad[i] < -max_angle_step) grad[i] = -max_angle_step;
-
+		total_error += std::abs(e_plus - e_minus);
+		grad[i] = (e_plus - e_minus)/(epsilon * 2);
 		// std::cout << e_plus << "  "  << e_minus <<std::endl;
 	}
 
-	//Set control points and oldpositions
-	mControlPts[index] = (mControlPts[index] - grad);
-	for(int i= 0 ; i < mControlPts[index].size();++i)
+	//Set the value of lambda and control points and old positions
+	int j;
+	std::vector<Eigen::VectorXd> current_control = mControlPts;
+	std::vector<Eigen::VectorXd> current_pose;
+	int minIter = 9;
+	for(j = 0; j < minIter ; j++)
 	{
-		if(mControlPts[index][i] > M_PI) mControlPts[index][i] = M_PI;
-		else if(mControlPts[index][i] < -M_PI) mControlPts[index][i] =  - M_PI;
-	}
-	mOldPose = computePose(mControlPts[index], index);
+		Eigen::VectorXd computed_grad = Eigen::VectorXd::Zero(controlPts.rows());
+		computed_grad = lambda * grad;
+		for(int i =0 ; i < grad.rows(); ++i){
+			if(computed_grad[i] > max_angle_step) computed_grad[i] = max_angle_step;
+			if(computed_grad[i] < -max_angle_step) computed_grad[i] = -max_angle_step;
+		}
+		current_control[index] = (mControlPts[index] - computed_grad);
+		for(int i= 0 ; i < current_control[index].size();++i)
+		{
+			if(current_control[index][i] > M_PI) current_control[index][i] = M_PI;
+			else if(current_control[index][i] < -M_PI) current_control[index][i] =  -M_PI;
+		}
+		current_pose = computePose(current_control[index], index);
 
-	return total_error / 2;
+		initPose(current_pose[0]);
+		double current_error = evaluateEnergy(current_pose);
+		mWorld->reset();
+		mCharacter->setPositions(p);
+		mCharacter->setVelocities(v);
+		mBall->setPositions(p_ball);
+		mBall->setVelocities(v_ball);
+		// std::cout << current_error <<std::endl;
+		if(current_error < prev_error){
+			prev_error = current_error;
+			break;
+		}
+		lambda *= 0.5;
+	}	
+	
+
+	if(j != minIter){
+		mControlPts = current_control;
+		mOldPose = current_pose;
+	}
+	else local++;
+	return prev_error;
 }
 
 double Dynamics::SGDiterate(int index, int iter)
@@ -199,7 +272,7 @@ double Dynamics::SGDiterate(int index, int iter)
 
 	//Setting Control points
 	Eigen::VectorXd controlPts_plus_eps = mControlPts[index], controlPts_minus_eps = mControlPts[index];
-	double epsilon = 0.005;
+	double epsilon = 0.008;
 	double lambda = 0.0002/ sqrt(iter);
 
 	double total_error = 0.0;
@@ -217,6 +290,7 @@ double Dynamics::SGDiterate(int index, int iter)
 		std::vector<Eigen::VectorXd> target_minus = computePose(controlPts_minus_eps, index);
 		
 		initPose(target_plus[0]);
+
 		double e_plus = evaluateEnergy(target_plus);
 		mWorld->reset();
 		mCharacter->setPositions(p);
@@ -232,8 +306,7 @@ double Dynamics::SGDiterate(int index, int iter)
 		mBall->setPositions(p_ball);
 		mBall->setVelocities(v_ball);
 
-		total_error += e_minus;
-		total_error += e_plus;
+		total_error += std::abs(e_plus - e_minus);
 		double angle_step = (e_plus - e_minus)/(epsilon * 2) * lambda;
 		if(angle_step > max_angle_step) angle_step = max_angle_step;
 		if(angle_step < -max_angle_step) angle_step = -max_angle_step;
@@ -245,7 +318,7 @@ double Dynamics::SGDiterate(int index, int iter)
 	}
 
 	mOldPose = computePose(mControlPts[index], index);
-	return total_error / 2;
+	return total_error / controlPts_plus_eps.rows();
 }
 
 int Dynamics::lambdaLearning(int iter, int lambda)
@@ -257,8 +330,14 @@ int Dynamics::lambdaLearning(int iter, int lambda)
 	int lambda_plus = lambda + epsilon, lambda_minus = lambda - epsilon;
 	double max_step = 20;
 
-	if(lambda_plus > n-4) lambda_plus = n-4;
-	if(lambda_minus < n * 0.5) lambda_minus = n * 0.5;
+	if(lambda_plus > n-4){
+		lambda_plus = n-4;
+		lambda_minus = n-4 - epsilon;
+	} 
+	else if(lambda_minus < n * 0.5){
+		lambda_minus = n * 0.5;
+		lambda_plus = n * 0.5 +epsilon;
+	}
 
 	std::vector<Eigen::VectorXd> target_plus, target_minus;
 
@@ -315,6 +394,8 @@ int Dynamics::lambdaLearning(int iter, int lambda)
 	if(step > max_step) step = max_step;
 	if(step < -max_step) step = -max_step;
 	new_lambda -= step;
+	if(new_lambda > n -4) new_lambda = n - 4;
+	else if ( new_lambda < n * 0.5) new_lambda = n * 0.5;
 
 	for(int i = 0; i < new_lambda; ++i){
 		Eigen::VectorXd pose = mOldPose[i];
@@ -353,6 +434,7 @@ void Dynamics::optimize(std::string name)
 	//Initialize mControl, mOld, control indexes
 	std::vector<int> control_index;
 	control_index.push_back(2);
+	control_index.push_back(5);
 
 	//control_index.push_back(4);
 	//control_index.push_back(5);
@@ -365,7 +447,7 @@ void Dynamics::optimize(std::string name)
 	for(int i = 0; i < pose.size(); ++i)
 		mControlPts.push_back(Eigen::VectorXd::Zero(numb_control));
 
-	int lambda = n * 85/100;
+	int lambda = n * 90/100;
 	//Initializing grabbing ==> Now, for simplicity, just given timing lamda as opener
 	for(int i = 0; i < lambda ; ++i)
 		mOldPose.push_back(grab_pose);
@@ -382,7 +464,8 @@ void Dynamics::optimize(std::string name)
 
 	//Initial controlpoints
 	for(int i = 0; i < numb_control; ++i){
-		mControlPts[2][i] = pose[2] - 45 * M_PI/180 *(numb_control-1-i)/(numb_control-1);
+		mControlPts[2][i] = pose[2] - 60 * M_PI/180 *(numb_control-1-i)/(numb_control-1);
+		mControlPts[5][i] = pose[5] - 30 * M_PI/180 *(numb_control-1-i)/(numb_control-1);
 	}
 
 	//Initializing old pose
@@ -392,31 +475,40 @@ void Dynamics::optimize(std::string name)
 	}
 
 	//Parameters
-	double epsilon = 0.01;
+	double epsilon = 0.05;
 	int mIter = 1000;
 
-	//Iterate for each control indexes
-	//Stop when error < epsilon or after some iteration number
-	for(int i = 1; i <= mIter; ++i){
-		std::cout << i <<"th iteration" <<std::endl;
-		for(int j = 0; j < control_index.size(); ++j){
-			double error = GDiterate(control_index[j], i);
-			std::cout << error << std::endl;
-			if(error < epsilon) break;
-		}	
-		// lambda = lambdaLearning(i, lambda);
-	}
-
-	double final_error;
 	initPose(mOldPose[0]);
-	final_error = evaluateEnergy(mOldPose);
-	std::cout << final_error <<std::endl;
+	prev_error = evaluateEnergy(mOldPose);
 	mWorld->reset();
 	mCharacter->setPositions(p);
 	mCharacter->setVelocities(v);
 	mBall->setPositions(p_ball);
 	mBall->setVelocities(v_ball);
-	//Just call mOldPose after this operation will brings the output 
+
+	//Iterate for each control indexes
+	//Stop when error < epsilon or after some iteration number
+	for(int i = 1; i <= mIter; ++i){
+		local = 0;
+		// time_check_start();
+		std::cout << i <<"th iteration" <<std::endl;
+		double error = 0.0;
+		for(int j = 0; j < control_index.size(); ++j){
+			error = GDiterate(control_index[j], i);
+			std::cout << "error is " << error << std::endl;
+			if(error <epsilon) {
+				local = control_index.size();
+				break;
+			}
+		}
+		// std::cout << "average grad mag : " << error << std::endl;
+		if(local == control_index.size()) break;
+		// time_check_end();
+		// lambda = lambdaLearning(i, lambda);
+	}
+
+
+	//Save algorithm
 	std::ofstream outFile("Result" + name + ".txt");	
 	for(int i = 0; i < control_index.size();++i){
 		std::cout << "result control point "<< control_index[i] << "th" <<std::endl;
@@ -426,7 +518,7 @@ void Dynamics::optimize(std::string name)
 	}
 	// addCollisionAspect();
 	outFile << "The error is " << std::endl;
-	outFile << final_error << std::endl;
+	outFile << prev_error << std::endl;
 	outFile.close();
 
 }
