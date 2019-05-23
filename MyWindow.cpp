@@ -27,6 +27,8 @@ Eigen::VectorXd currentpose;
 std::vector<Eigen::VectorXd> target_plus;
 Eigen::VectorXd controlPts;
 Eigen::VectorXd controlPts2;
+Eigen::Vector3d prev_ball;
+Eigen::Vector3d original_ball;
 
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPoseCountDown(-1)
@@ -42,8 +44,8 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	Dynamics* dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 3.5, 0.0));
-	dyn->optimize("Two_Ctrl_3_5_stepping_Trial2");
+	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 3.5, 0.0));
+	dyn->optimize("Two_Ctrl_35_stepping_Trial_Pose1");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
@@ -71,14 +73,14 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 
 	// //From here we manually gives the output velocity.
 	// controlPts = Eigen::VectorXd::Zero(3);
-	// controlPts[0] = -2.60283;
-	// controlPts[1] = -2.06987;
-	// controlPts[2] =   -1.3527;
+	// controlPts[0] = -2.79253;
+	// controlPts[1] = -2.44346;
+	// controlPts[2] =   -1.5708;
 
 	// controlPts2 = Eigen::VectorXd::Zero(3);
-	// controlPts2[0] = -0.507305;
-	// controlPts2[1] = -0.252843;
-	// controlPts2[2] = 0.0537361;
+	// controlPts2[0] = -0.698132;
+	// controlPts2[1] = -0.349066;
+	// controlPts2[2] = 0.0;
 
 	// // controlPts[3] = -1.843;
 	// // controlPts[4] = -1.71848;
@@ -100,6 +102,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	//  // This is the last line to be commentted
 
 	setPretarget();
+	original_ball = ball->getCOM();
 
 	target_plus = dyn->poseGetter();
 
@@ -365,10 +368,23 @@ void MyWindow::timeStepping()
 		flag4++;
 	}
 	else if (flag4 == steps) {
-		std::cout << "velocity is " << std::endl;
-		std::cout << ball->getCOMLinearVelocity() << std::endl;
+		// std::cout << "velocity is " << std::endl;
+		// std::cout << ball->getCOMLinearVelocity() << std::endl;
+		prev_ball = ball->getCOM();
 		flag4++;
 	}
+	// else if(flag4 < steps * 10) 
+	// {
+	// 	Eigen::Vector3d current_ball = ball->getCOM();
+	// 	if(current_ball[1] < prev_ball[1])
+	// 	{
+
+	// 	}
+	// 	else
+	// 		prev_ball = current_ball;
+	// 	flag4++;
+	// }
+
 
 	if(mPoseCountDown >=0)
 	{
@@ -479,6 +495,14 @@ void MyWindow::drawTarget(){
 	glEnd();
 }
 
+void MyWindow::draw_TargetPoint(){
+	glColor3f(1.0, 0.0, 0.0);
+	glPointSize(7.0);
+	Eigen::Vector3d point = dyn->targetGetter();
+	glBegin(GL_POINTS);
+	glVertex3f(point[0], point[1], point[2]);
+	glEnd();
+}
 
 void MyWindow::draw() 
 {
@@ -536,6 +560,7 @@ void MyWindow::draw()
 	glEnable(GL_LIGHTING);
 	drawWorld();
 	glDisable(GL_LIGHTING);
+	draw_TargetPoint();
 
 	// drawTarget();
 	// drawMultipleTendons();

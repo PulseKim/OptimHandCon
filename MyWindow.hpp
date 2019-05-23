@@ -53,6 +53,8 @@ public:
 
   void drawTarget();
 
+  void draw_TargetPoint();
+
   void draw() override;
 
   void targetMovement();
@@ -68,6 +70,7 @@ protected:
   int mPoseCountDown;
 
   std::unique_ptr<Controller> mController;
+  Dynamics* dyn;
   SkeletonPtr finger;
   SkeletonPtr floor;
   SkeletonPtr hand;

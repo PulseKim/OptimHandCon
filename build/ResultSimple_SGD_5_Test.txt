@@ -1,6 +1,0 @@
-The result control point2is 
--2.68067
--2.07759
--1.36764
-The error is 
-6.15866
