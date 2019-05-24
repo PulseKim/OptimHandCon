@@ -56,17 +56,6 @@ CMAKE_BINARY_DIR = /home/mrl/dart/tutorials/finger/build
 #=============================================================================
 # Targets provided globally by CMake.
 
-# Special rule for the target rebuild_cache
-rebuild_cache:
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
-.PHONY : rebuild_cache
-
-# Special rule for the target rebuild_cache
-rebuild_cache/fast: rebuild_cache
-
-.PHONY : rebuild_cache/fast
-
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake cache editor..."
@@ -77,6 +66,17 @@ edit_cache:
 edit_cache/fast: edit_cache
 
 .PHONY : edit_cache/fast
+
+# Special rule for the target rebuild_cache
+rebuild_cache:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
+	/usr/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+.PHONY : rebuild_cache
+
+# Special rule for the target rebuild_cache
+rebuild_cache/fast: rebuild_cache
+
+.PHONY : rebuild_cache/fast
 
 # The main all target
 all: cmake_check_build_system
@@ -111,17 +111,17 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named hand
+# Target rules for targets named hand2
 
 # Build rule for target.
-hand: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 hand
-.PHONY : hand
+hand2: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 hand2
+.PHONY : hand2
 
 # fast build rule for target.
-hand/fast:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/build
-.PHONY : hand/fast
+hand2/fast:
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/build
+.PHONY : hand2/fast
 
 Controller.o: Controller.cpp.o
 
@@ -129,7 +129,7 @@ Controller.o: Controller.cpp.o
 
 # target to build an object file
 Controller.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Controller.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Controller.cpp.o
 .PHONY : Controller.cpp.o
 
 Controller.i: Controller.cpp.i
@@ -138,7 +138,7 @@ Controller.i: Controller.cpp.i
 
 # target to preprocess a source file
 Controller.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Controller.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Controller.cpp.i
 .PHONY : Controller.cpp.i
 
 Controller.s: Controller.cpp.s
@@ -147,7 +147,7 @@ Controller.s: Controller.cpp.s
 
 # target to generate assembly for a file
 Controller.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Controller.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Controller.cpp.s
 .PHONY : Controller.cpp.s
 
 Dynamics.o: Dynamics.cpp.o
@@ -156,7 +156,7 @@ Dynamics.o: Dynamics.cpp.o
 
 # target to build an object file
 Dynamics.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Dynamics.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Dynamics.cpp.o
 .PHONY : Dynamics.cpp.o
 
 Dynamics.i: Dynamics.cpp.i
@@ -165,7 +165,7 @@ Dynamics.i: Dynamics.cpp.i
 
 # target to preprocess a source file
 Dynamics.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Dynamics.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Dynamics.cpp.i
 .PHONY : Dynamics.cpp.i
 
 Dynamics.s: Dynamics.cpp.s
@@ -174,7 +174,7 @@ Dynamics.s: Dynamics.cpp.s
 
 # target to generate assembly for a file
 Dynamics.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Dynamics.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Dynamics.cpp.s
 .PHONY : Dynamics.cpp.s
 
 HandMaker.o: HandMaker.cpp.o
@@ -183,7 +183,7 @@ HandMaker.o: HandMaker.cpp.o
 
 # target to build an object file
 HandMaker.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/HandMaker.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/HandMaker.cpp.o
 .PHONY : HandMaker.cpp.o
 
 HandMaker.i: HandMaker.cpp.i
@@ -192,7 +192,7 @@ HandMaker.i: HandMaker.cpp.i
 
 # target to preprocess a source file
 HandMaker.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/HandMaker.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/HandMaker.cpp.i
 .PHONY : HandMaker.cpp.i
 
 HandMaker.s: HandMaker.cpp.s
@@ -201,7 +201,7 @@ HandMaker.s: HandMaker.cpp.s
 
 # target to generate assembly for a file
 HandMaker.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/HandMaker.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/HandMaker.cpp.s
 .PHONY : HandMaker.cpp.s
 
 IkSolver.o: IkSolver.cpp.o
@@ -210,7 +210,7 @@ IkSolver.o: IkSolver.cpp.o
 
 # target to build an object file
 IkSolver.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/IkSolver.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/IkSolver.cpp.o
 .PHONY : IkSolver.cpp.o
 
 IkSolver.i: IkSolver.cpp.i
@@ -219,7 +219,7 @@ IkSolver.i: IkSolver.cpp.i
 
 # target to preprocess a source file
 IkSolver.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/IkSolver.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/IkSolver.cpp.i
 .PHONY : IkSolver.cpp.i
 
 IkSolver.s: IkSolver.cpp.s
@@ -228,7 +228,7 @@ IkSolver.s: IkSolver.cpp.s
 
 # target to generate assembly for a file
 IkSolver.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/IkSolver.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/IkSolver.cpp.s
 .PHONY : IkSolver.cpp.s
 
 MyWindow.o: MyWindow.cpp.o
@@ -237,7 +237,7 @@ MyWindow.o: MyWindow.cpp.o
 
 # target to build an object file
 MyWindow.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/MyWindow.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/MyWindow.cpp.o
 .PHONY : MyWindow.cpp.o
 
 MyWindow.i: MyWindow.cpp.i
@@ -246,7 +246,7 @@ MyWindow.i: MyWindow.cpp.i
 
 # target to preprocess a source file
 MyWindow.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/MyWindow.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/MyWindow.cpp.i
 .PHONY : MyWindow.cpp.i
 
 MyWindow.s: MyWindow.cpp.s
@@ -255,7 +255,7 @@ MyWindow.s: MyWindow.cpp.s
 
 # target to generate assembly for a file
 MyWindow.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/MyWindow.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/MyWindow.cpp.s
 .PHONY : MyWindow.cpp.s
 
 SkelParser.o: SkelParser.cpp.o
@@ -264,7 +264,7 @@ SkelParser.o: SkelParser.cpp.o
 
 # target to build an object file
 SkelParser.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/SkelParser.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/SkelParser.cpp.o
 .PHONY : SkelParser.cpp.o
 
 SkelParser.i: SkelParser.cpp.i
@@ -273,7 +273,7 @@ SkelParser.i: SkelParser.cpp.i
 
 # target to preprocess a source file
 SkelParser.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/SkelParser.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/SkelParser.cpp.i
 .PHONY : SkelParser.cpp.i
 
 SkelParser.s: SkelParser.cpp.s
@@ -282,7 +282,7 @@ SkelParser.s: SkelParser.cpp.s
 
 # target to generate assembly for a file
 SkelParser.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/SkelParser.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/SkelParser.cpp.s
 .PHONY : SkelParser.cpp.s
 
 Tendon.o: Tendon.cpp.o
@@ -291,7 +291,7 @@ Tendon.o: Tendon.cpp.o
 
 # target to build an object file
 Tendon.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Tendon.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Tendon.cpp.o
 .PHONY : Tendon.cpp.o
 
 Tendon.i: Tendon.cpp.i
@@ -300,7 +300,7 @@ Tendon.i: Tendon.cpp.i
 
 # target to preprocess a source file
 Tendon.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Tendon.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Tendon.cpp.i
 .PHONY : Tendon.cpp.i
 
 Tendon.s: Tendon.cpp.s
@@ -309,7 +309,7 @@ Tendon.s: Tendon.cpp.s
 
 # target to generate assembly for a file
 Tendon.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/Tendon.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/Tendon.cpp.s
 .PHONY : Tendon.cpp.s
 
 main.o: main.cpp.o
@@ -318,7 +318,7 @@ main.o: main.cpp.o
 
 # target to build an object file
 main.cpp.o:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/main.cpp.o
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/main.cpp.o
 .PHONY : main.cpp.o
 
 main.i: main.cpp.i
@@ -327,7 +327,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/main.cpp.i
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -336,7 +336,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) -f CMakeFiles/hand.dir/build.make CMakeFiles/hand.dir/main.cpp.s
+	$(MAKE) -f CMakeFiles/hand2.dir/build.make CMakeFiles/hand2.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 # Help Target
@@ -345,9 +345,9 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... hand"
+	@echo "... rebuild_cache"
+	@echo "... hand2"
 	@echo "... Controller.o"
 	@echo "... Controller.i"
 	@echo "... Controller.s"

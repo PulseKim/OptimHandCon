@@ -1,0 +1,14 @@
+The result control point2is 
+ -2.79253
+ -1.76947
+-0.770796
+The result control point4is 
+      0.8
+0.0872665
+0.0235209
+The result control point5is 
+-0.298132
+-0.749066
+      0.4
+The error is 
+0.000669007

@@ -25,10 +25,9 @@ Eigen::Vector3d pretarget;
 Eigen::VectorXd targetpose;
 Eigen::VectorXd currentpose;
 std::vector<Eigen::VectorXd> target_plus;
-Eigen::VectorXd controlPts;
-Eigen::VectorXd controlPts2;
 Eigen::Vector3d prev_ball;
 Eigen::Vector3d original_ball;
+Eigen::Vector3d max_ball;
 
 
 MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPoseCountDown(-1)
@@ -44,8 +43,8 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0, 3.5, 0.0));
-	dyn->optimize("Two_Ctrl_35_stepping_Trial_Pose1");
+	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0,4.0, 0.0));
+	dyn->optimize("Three_Ctrl_4_stepping_Trial_Pose");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
@@ -61,7 +60,7 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		seriesPose.push_back(targetpose);
 	for(int i = timingOpen; i < steps; ++i){
 		Eigen::VectorXd interpolate_pose = currentpose;
-		if (i < timingOpen + 4){
+		if (i < timingOpen + 5){
 			for(int j = 0; j < currentpose.size(); ++j)
 				interpolate_pose[j] = currentpose[j] + (targetpose[j] - currentpose[j]) * (timingOpen+4-i) / 4;
 		}
@@ -71,35 +70,42 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		seriesPose.push_back(interpolate_pose);
 	}
 
-	// //From here we manually gives the output velocity.
-	// controlPts = Eigen::VectorXd::Zero(3);
-	// controlPts[0] = -2.79253;
-	// controlPts[1] = -2.44346;
-	// controlPts[2] =   -1.5708;
+	//From here we manually gives the output velocity.
+	Eigen::VectorXd controlPts = Eigen::VectorXd::Zero(3);
+	controlPts[0] = -2.79625;
+	controlPts[1] = -1.77311;
+	controlPts[2] = -0.775257;
 
-	// controlPts2 = Eigen::VectorXd::Zero(3);
-	// controlPts2[0] = -0.698132;
-	// controlPts2[1] = -0.349066;
-	// controlPts2[2] = 0.0;
+	Eigen::VectorXd controlPts2 = Eigen::VectorXd::Zero(3);
+	controlPts2[0] = 0.375923;
+	controlPts2[1] = 0.500509;
+	controlPts2[2] = 0.0;
 
-	// // controlPts[3] = -1.843;
-	// // controlPts[4] = -1.71848;
-	// // controlPts[5] = -1.54651;
+	Eigen::VectorXd controlPts3 = Eigen::VectorXd::Zero(3);
+	controlPts3[0] = -0.298132;
+	controlPts3[1] = -0.749066;
+	controlPts3[2] = 0.4;
 
-	// for(int i = 0; i< steps; ++i){
-	// 	Eigen::VectorXd tempPose = seriesPose[i];
-	// 	// double current_t = mWorld->getTimeStep() * i;
-	// 	double current_t = mWorld->getTimeStep() * i / T;
-	// 	tempPose[2] = 0;
-	// 	tempPose[5] = 0;
-	// 	int m = controlPts.size();
-	// 	for(int j =0; j < m; ++j){
-	// 		tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
-	// 		tempPose[5] += controlPts2[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);  
-	// 	}
-	// 	target_plus.push_back(tempPose);		
-	// }
-	//  // This is the last line to be commentted
+	// controlPts[3] = -1.843;
+	// controlPts[4] = -1.71848;
+	// controlPts[5] = -1.54651;
+
+	for(int i = 0; i< steps; ++i){
+		Eigen::VectorXd tempPose = seriesPose[i];
+		// double current_t = mWorld->getTimeStep() * i;
+		double current_t = mWorld->getTimeStep() * i / T;
+		tempPose[2] = 0;
+		tempPose[4] = 0;
+		tempPose[5] = 0;
+		int m = controlPts.size();
+		for(int j =0; j < m; ++j){
+			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
+			tempPose[4] += controlPts2[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
+			tempPose[5] += controlPts3[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);  
+		}
+		target_plus.push_back(tempPose);		
+	}
+	 // This is the last line to be commentted
 
 	setPretarget();
 	original_ball = ball->getCOM();
@@ -339,6 +345,8 @@ void MyWindow::timeStepping()
 	// 	flag1++;
 	// }
 	// else if(flag1 < presteps * 2) flag1++;
+
+	
 	if(flag2 < presteps + 1){
 		Eigen::VectorXd new_pose = target_plus[0];
 		Eigen::VectorXd pose = targetpose;	
@@ -373,17 +381,33 @@ void MyWindow::timeStepping()
 		prev_ball = ball->getCOM();
 		flag4++;
 	}
-	// else if(flag4 < steps * 10) 
-	// {
-	// 	Eigen::Vector3d current_ball = ball->getCOM();
-	// 	if(current_ball[1] < prev_ball[1])
-	// 	{
+	else if(flag4 < steps * 10) 
+	{
+		Eigen::Vector3d current_ball = ball->getCOM();
+		double epsilon = 0.03;
+		if(current_ball[1] < prev_ball[1] && std::abs(ball->getCOMLinearVelocity()[1]) < epsilon)
+		{
+			max_ball = prev_ball;
+			flag4 = steps * 10-1;
+			std::cout << max_ball <<std::endl;
+		}
+		else
+			prev_ball = current_ball;
+		flag4++;
+	}
+	else if(flag4 == steps * 10)
+	{
+		if(max_ball[1] < 0) max_ball[1] = 0.000001;
+		double t_max = std::sqrt(2 * max_ball[1] * std::abs(mWorld->getGravity()[1])) / std::abs(mWorld->getGravity()[1]);
+		Eigen::Vector3d v_ball;
+		v_ball[1] = std::sqrt(2 * max_ball[1] * std::abs(mWorld->getGravity()[1]));
+		v_ball[0] = max_ball[0] / t_max;
+		v_ball[2] = max_ball[2] / t_max;
+		std::cout << "v ball is" << std::endl;
+		std::cout << v_ball << std::endl;
+		flag4++;
+	}
 
-	// 	}
-	// 	else
-	// 		prev_ball = current_ball;
-	// 	flag4++;
-	// }
 
 
 	if(mPoseCountDown >=0)
@@ -560,11 +584,9 @@ void MyWindow::draw()
 	glEnable(GL_LIGHTING);
 	drawWorld();
 	glDisable(GL_LIGHTING);
+
 	draw_TargetPoint();
 
-	// drawTarget();
-	// drawMultipleTendons();
-	// drawTendon();
 	glEnable(GL_LIGHTING);
 
 	  // display the frame count in 2D text

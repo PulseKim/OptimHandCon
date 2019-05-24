@@ -95,5 +95,5 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
-  "CMakeFiles/hand.dir/DependInfo.cmake"
+  "CMakeFiles/hand2.dir/DependInfo.cmake"
   )
