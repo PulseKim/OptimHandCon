@@ -43,8 +43,8 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0,4.0, 0.0));
-	dyn->optimize("Three_Ctrl_4_stepping_Trial_Pose");
+	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0,4.2, 0.0));
+	dyn->optimize("Three_Ctrl_42_stepping_Trial_Pose");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
@@ -70,42 +70,42 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 		seriesPose.push_back(interpolate_pose);
 	}
 
-	//From here we manually gives the output velocity.
-	Eigen::VectorXd controlPts = Eigen::VectorXd::Zero(3);
-	controlPts[0] = -2.79625;
-	controlPts[1] = -1.77311;
-	controlPts[2] = -0.775257;
+	// //From here we manually gives the output velocity.
+	// Eigen::VectorXd controlPts = Eigen::VectorXd::Zero(3);
+	// controlPts[0] = -2.79625;
+	// controlPts[1] = -1.77311;
+	// controlPts[2] = -0.775257;
 
-	Eigen::VectorXd controlPts2 = Eigen::VectorXd::Zero(3);
-	controlPts2[0] = 0.375923;
-	controlPts2[1] = 0.500509;
-	controlPts2[2] = 0.0;
+	// Eigen::VectorXd controlPts2 = Eigen::VectorXd::Zero(3);
+	// controlPts2[0] = 0.375923;
+	// controlPts2[1] = 0.500509;
+	// controlPts2[2] = 0.0;
 
-	Eigen::VectorXd controlPts3 = Eigen::VectorXd::Zero(3);
-	controlPts3[0] = -0.298132;
-	controlPts3[1] = -0.749066;
-	controlPts3[2] = 0.4;
+	// Eigen::VectorXd controlPts3 = Eigen::VectorXd::Zero(3);
+	// controlPts3[0] = -0.298132;
+	// controlPts3[1] = -0.749066;
+	// controlPts3[2] = 0.4;
 
-	// controlPts[3] = -1.843;
-	// controlPts[4] = -1.71848;
-	// controlPts[5] = -1.54651;
+	// // controlPts[3] = -1.843;
+	// // controlPts[4] = -1.71848;
+	// // controlPts[5] = -1.54651;
 
-	for(int i = 0; i< steps; ++i){
-		Eigen::VectorXd tempPose = seriesPose[i];
-		// double current_t = mWorld->getTimeStep() * i;
-		double current_t = mWorld->getTimeStep() * i / T;
-		tempPose[2] = 0;
-		tempPose[4] = 0;
-		tempPose[5] = 0;
-		int m = controlPts.size();
-		for(int j =0; j < m; ++j){
-			tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
-			tempPose[4] += controlPts2[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
-			tempPose[5] += controlPts3[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);  
-		}
-		target_plus.push_back(tempPose);		
-	}
-	 // This is the last line to be commentted
+	// for(int i = 0; i< steps; ++i){
+	// 	Eigen::VectorXd tempPose = seriesPose[i];
+	// 	// double current_t = mWorld->getTimeStep() * i;
+	// 	double current_t = mWorld->getTimeStep() * i / T;
+	// 	tempPose[2] = 0;
+	// 	tempPose[4] = 0;
+	// 	tempPose[5] = 0;
+	// 	int m = controlPts.size();
+	// 	for(int j =0; j < m; ++j){
+	// 		tempPose[2] += controlPts[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
+	// 		tempPose[4] += controlPts2[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);
+	// 		tempPose[5] += controlPts3[j]*dyn->combination(m-1,j) * pow((1-current_t), (m-1-j)) * pow(current_t, j);  
+	// 	}
+	// 	target_plus.push_back(tempPose);		
+	// }
+	//  // This is the last line to be commentted
 
 	setPretarget();
 	original_ball = ball->getCOM();
@@ -375,12 +375,6 @@ void MyWindow::timeStepping()
 		// std::cout << ball->getCOMLinearVelocity() << std::endl;
 		flag4++;
 	}
-	else if (flag4 == steps) {
-		// std::cout << "velocity is " << std::endl;
-		// std::cout << ball->getCOMLinearVelocity() << std::endl;
-		prev_ball = ball->getCOM();
-		flag4++;
-	}
 	else if(flag4 < steps * 10) 
 	{
 		Eigen::Vector3d current_ball = ball->getCOM();
@@ -398,11 +392,11 @@ void MyWindow::timeStepping()
 	else if(flag4 == steps * 10)
 	{
 		if(max_ball[1] < 0) max_ball[1] = 0.000001;
-		double t_max = std::sqrt(2 * max_ball[1] * std::abs(mWorld->getGravity()[1])) / std::abs(mWorld->getGravity()[1]);
+		double t_max = std::sqrt(2 * (max_ball[1]-original_ball[1]) * std::abs(mWorld->getGravity()[1])) / std::abs(mWorld->getGravity()[1]);
 		Eigen::Vector3d v_ball;
-		v_ball[1] = std::sqrt(2 * max_ball[1] * std::abs(mWorld->getGravity()[1]));
-		v_ball[0] = max_ball[0] / t_max;
-		v_ball[2] = max_ball[2] / t_max;
+		v_ball[1] = std::sqrt(2 * (max_ball[1]-original_ball[1]) * std::abs(mWorld->getGravity()[1]));
+		v_ball[0] = (max_ball[0]-original_ball[0]) / t_max;
+		v_ball[2] = (max_ball[2]-original_ball[2]) / t_max;
 		std::cout << "v ball is" << std::endl;
 		std::cout << v_ball << std::endl;
 		flag4++;

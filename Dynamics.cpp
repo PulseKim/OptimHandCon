@@ -11,7 +11,7 @@ int target_frame;
 double prev_error;
 int local = 0;
 double time_max;
-double weight = 25.00;
+double weight = 4.00;
 Eigen::VectorXd p;
 Eigen::VectorXd v;
 Eigen::VectorXd p_ball;
@@ -31,17 +31,23 @@ void time_check_end()
 	std::cout<<"time elapsed: " << elapsed_seconds.count()<<std::endl;
 }
 
-Dynamics::Dynamics(const WorldPtr& world, const Eigen::Vector3d& v_in): mWorld(world), v_target(v_in)
+Dynamics::Dynamics(const WorldPtr& world, const Eigen::Vector3d& v_in):mOriginalWorld(world), v_target(v_in)
 {
+	this->init(mOriginalWorld);
+	step = mWorld->getTimeStep();
+	n = T/step;
+	target_frame = n/30;
+
+}
+
+void Dynamics::init(const WorldPtr& world)
+{
+	mWorld = world->clone();
 	std::vector<Tendon*> tempTendon;
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 	mBall = mWorld->getSkeleton("ball");
 	mCharacter = mWorld->getSkeleton("hand");	
-	step = mWorld->getTimeStep();
-	n = T/step;
-	target_frame = n/30;
-
 }
 
 
@@ -81,10 +87,10 @@ std::vector<Eigen::VectorXd> Dynamics::computePose(const Eigen::VectorXd& contro
 double Dynamics::evaluateEnergy(std::vector<Eigen::VectorXd> target_pose)
 {	
 
-	for(int i = 0; i< n ; ++i){
-		mController-> setTargetPosition(target_pose[i]);
+	for(int i = 0; i< n ; ++i){		
 		mController->clearForces();
 		mController->addSPDForces();
+		mController-> setTargetPosition(target_pose[i]);
 		mWorld->step();
 	}
 	Eigen::Vector3d v_ball = mBall->getCOMLinearVelocity();
@@ -107,11 +113,11 @@ double Dynamics::evaluateEnergyPosition(std::vector<Eigen::VectorXd> target_pose
 	Eigen::Vector3d current_real_pose;
 
 	int i;
-	for(i = 0; i< time_max * 4/ step + n; ++i){
-		if(i < n)
-			mController-> setTargetPosition(target_pose[i]);
+	for(i = 0; i< time_max * 10/ step + n; ++i){
 		mController->clearForces();
 		mController->addSPDForces();
+		if(i < n)
+			mController-> setTargetPosition(target_pose[i]);
 		current_real_pose = mBall->getCOM();
 		// std::cout << "this" << current_real_pose[1] <<std::endl;
 		if(i > n && std::abs(mBall->getCOMLinearVelocity()[1]) < epsilon && current_real_pose[1] < prev_real_pose[1])
@@ -128,11 +134,11 @@ double Dynamics::evaluateEnergyPosition(std::vector<Eigen::VectorXd> target_pose
 	// std::cout << "height : " << max_real_pose[1] << std::endl;
 
 	if(max_real_pose[1] < 0) max_real_pose[1] = 0.0000001;
-	double t_max = std::sqrt(2 * max_real_pose[1] * std::abs(mWorld->getGravity()[1])) / std::abs(mWorld->getGravity()[1]);
+	double t_max = std::sqrt(2 * (max_real_pose[1]- p_ball[1])* std::abs(mWorld->getGravity()[1])) / std::abs(mWorld->getGravity()[1]);
 	Eigen::Vector3d v_ball;
-	v_ball[1] = std::sqrt(2 * max_real_pose[1] * std::abs(mWorld->getGravity()[1]));
-	v_ball[0] = max_real_pose[0] / t_max;
-	v_ball[2] = max_real_pose[2] / t_max;
+	v_ball[1] = std::sqrt(2 * (max_real_pose[1]- p_ball[4])* std::abs(mWorld->getGravity()[1]));
+	v_ball[0] = (max_real_pose[0]-p_ball[3]) / t_max;
+	v_ball[2] = (max_real_pose[2]-p_ball[5]) / t_max;
 
 	std::cout << "vel_ball" << std::endl;
 	std::cout << v_ball.transpose() <<std::endl;
@@ -144,6 +150,15 @@ double Dynamics::evaluateEnergyPosition(std::vector<Eigen::VectorXd> target_pose
 		}
 		else
 			error += weight * (v_target[i] - v_ball[i]) * (v_target[i] - v_ball[i]);
+	// for(int i = 0; i < 3; ++i)
+	// {
+	// 	if(i ==1){
+	// 		error += (max_pose_target[i] - max_real_pose[i]) * (max_pose_target[i] - max_real_pose[i]);
+	// 	}
+	// 	else
+	// 		error += weight * (max_pose_target[i] - max_real_pose[i]) * (max_pose_target[i] - max_real_pose[i]);
+	// }
+
 	return error;
 }
 
@@ -157,12 +172,12 @@ double Dynamics::radian(double angle){
 void Dynamics::initPose(Eigen::VectorXd initialPose)
 {
 
-	// mWorld->step(true);
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
+	this->init(mOriginalWorld);
+	// mWorld->reset();
+	// mCharacter->setPositions(p);
+	// mCharacter->setVelocities(v);
+	// mBall->setPositions(p_ball);
+	// mBall->setVelocities(v_ball);
 
 
 	Eigen::VectorXd current = mCharacter->getPositions();
@@ -207,21 +222,21 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 	mCharacter->setPositions(pose_init);
 
 	for(int i = 1; i < preN+1 ; ++i){
+		mController->clearForces();
+		mController->addSPDForces();
 		for(int j = 0; j < pose.size() ; ++j){
 			pose[j] = grabbed[j] + (initialPose[j] - grabbed[j]) * i / preN;
 		}
-		mController->clearForces();
-		mController->addSPDForces();
 		mController->setTargetPosition(pose);
 		mWorld->step();
 	}
 
-		//Wait for stable status
-	for(int i = 0; i < preN; ++i){
-		mController->clearForces();
-		mController->addSPDForces();
-		mWorld->step();
-	}
+	// 	//Wait for stable status
+	// for(int i = 0; i < preN; ++i){
+	// 	mController->clearForces();
+	// 	mController->addSPDForces();
+	// 	mWorld->step();
+	// }
 	// std::cout <<"Ball speed" << mBall->getCOM().transpose() << std::endl;
 
 	
@@ -669,20 +684,15 @@ void Dynamics::optimize(std::string name)
 	final_error = evaluateEnergyPosition(mOldPose);
 	std::cout << "final error2 " << final_error <<std::endl;
 
-	mWorld->step(true);
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
+	this->init(mOriginalWorld);
 
 	//Save algorithm
 	std::ofstream outFile("Result" + name + ".txt");	
 	for(int i = 0; i < control_index.size();++i){
-		std::cout << "result control point "<< control_index[i] << "th" <<std::endl;
+		// std::cout << "result control point "<< control_index[i] << "th" <<std::endl;
 		outFile << "The result control point"<< control_index[i] << "is " << std::endl;
-		std::cout << mControlPts[control_index[i]] << std::endl;
-		outFile << mControlPts[control_index[i]] << std::endl;
+		// std::cout << mControlPts[control_index[i]] << std::endl;
+		outFile << mControlPts[control_index[i]].transpose() << std::endl;
 	}
 	// addCollisionAspect();
 	outFile << "The error is " << std::endl;

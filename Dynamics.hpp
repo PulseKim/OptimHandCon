@@ -14,6 +14,7 @@ class Dynamics
 {
 public:
 	Dynamics(const WorldPtr& world, const Eigen::Vector3d& v_in);
+	void init(const WorldPtr& world);
 	double evaluateEnergy(std::vector<Eigen::VectorXd> target_pose);
 	double evaluateEnergyPosition(std::vector<Eigen::VectorXd> target_pose);
 	std::vector<Eigen::VectorXd> computePose(const Eigen::VectorXd& controlPts, int index);
@@ -33,6 +34,7 @@ public:
 	
 protected:
 	WorldPtr mWorld;
+	WorldPtr mOriginalWorld;
 	SkeletonPtr mBall;
 	SkeletonPtr mCharacter;
 	std::unique_ptr<Controller> mController;
