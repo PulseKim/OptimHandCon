@@ -208,7 +208,7 @@ Eigen::VectorXd Controller::grabOrOpen(Eigen::VectorXd originalPose, bool isGrab
         for(int i = 0 ; i< 4 ; ++i){
             pose[i*4 + 7] = 66.0* rad;
             pose[i*4 + 8] = 45.0* rad;
-            pose[i*4 + 9] = 68.0* rad;
+            pose[i*4 + 9] = 66.0* rad;
         }
         pose[22] = 90.0 * rad;
         pose[23] = -40.0 * rad;

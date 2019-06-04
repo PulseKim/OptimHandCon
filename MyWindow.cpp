@@ -120,8 +120,8 @@ void MyWindow::setPretarget(){
 	Eigen::VectorXd pose = hand->getPositions();
 	for(int i = 0 ; i< 4 ; ++i){
 		pose[i*4 + 7] = radian(66.0);
-		pose[i*4 + 8] = radian(45.0);
-		pose[i*4 + 9] = radian(60.0);
+		pose[i*4 + 8] = radian(43.0);
+		pose[i*4 + 9] = radian(58.0);
 	}
 	pose[22] = radian(90.0);
 	pose[23] = radian(-40.0);
@@ -346,7 +346,7 @@ void MyWindow::timeStepping()
 	// }
 	// else if(flag1 < presteps * 2) flag1++;
 
-	
+
 	if(flag2 < presteps + 1){
 		Eigen::VectorXd new_pose = target_plus[0];
 		Eigen::VectorXd pose = targetpose;	
@@ -406,6 +406,7 @@ void MyWindow::timeStepping()
 		std::cout << "v ball is" << std::endl;
 		std::cout << v_ball << std::endl;
 		flag4++;
+		// mWorld->reset();
 	}
 
 

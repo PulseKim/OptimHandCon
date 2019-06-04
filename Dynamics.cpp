@@ -11,7 +11,7 @@ int target_frame;
 double prev_error;
 int local = 0;
 double time_max;
-double weight = 0.01;
+double weight = 25.00;
 Eigen::VectorXd p;
 Eigen::VectorXd v;
 Eigen::VectorXd p_ball;
@@ -135,7 +135,7 @@ double Dynamics::evaluateEnergyPosition(std::vector<Eigen::VectorXd> target_pose
 	v_ball[2] = max_real_pose[2] / t_max;
 
 	std::cout << "vel_ball" << std::endl;
-	std::cout << v_ball <<std::endl;
+	std::cout << v_ball.transpose() <<std::endl;
 	double error = 0.0;
 	for(int i= 0; i<3; ++i)
 		if(i ==1){
@@ -156,6 +156,15 @@ double Dynamics::radian(double angle){
 //Pre-grabbing and move to the starting point
 void Dynamics::initPose(Eigen::VectorXd initialPose)
 {
+
+	// mWorld->step(true);
+	mWorld->reset();
+	mCharacter->setPositions(p);
+	mCharacter->setVelocities(v);
+	mBall->setPositions(p_ball);
+	mBall->setVelocities(v_ball);
+
+
 	Eigen::VectorXd current = mCharacter->getPositions();
 	Eigen::VectorXd grabbed = mController->grabOrOpen(current,true);
 	Eigen::VectorXd pose = Eigen::VectorXd::Zero(mCharacter->getPositions().size());
@@ -182,11 +191,13 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 	// }
 	// //Go to first position step by step
 
+
+
 	Eigen::VectorXd pose_init = mCharacter->getPositions();
 	for(int i = 0 ; i< 4 ; ++i){
 		pose_init[i*4 + 7] = radian(66.0);
-		pose_init[i*4 + 8] = radian(45.0);
-		pose_init[i*4 + 9] = radian(60.0);
+		pose_init[i*4 + 8] = radian(43.0);
+		pose_init[i*4 + 9] = radian(58.0);
 	}
 	pose_init[22] = radian(90.0);
 	pose_init[23] = radian(-40.0);
@@ -203,16 +214,17 @@ void Dynamics::initPose(Eigen::VectorXd initialPose)
 		mController->addSPDForces();
 		mController->setTargetPosition(pose);
 		mWorld->step();
-
 	}
-	// std::cout << mBall->getPositions() << std::endl;
 
-	// //Wait for stable status
-	// for(int i = 0; i < preN; ++i){
-	// 	mController->clearForces();
-	// 	mController->addSPDForces();
-	// 	mWorld->step();
-	// }
+		//Wait for stable status
+	for(int i = 0; i < preN; ++i){
+		mController->clearForces();
+		mController->addSPDForces();
+		mWorld->step();
+	}
+	// std::cout <<"Ball speed" << mBall->getCOM().transpose() << std::endl;
+
+	
 }
 
 double Dynamics::GDiterate(int index, int iter)
@@ -249,19 +261,9 @@ double Dynamics::GDiterate(int index, int iter)
 		// time_check_start();
 		double e_plus = evaluateEnergy(target_plus);
 		// time_check_end();
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
 
 		initPose(target_minus[0]);
 		double e_minus = evaluateEnergy(target_minus);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
 
 		total_error += std::abs(e_plus - e_minus);
 		grad[i] = (e_plus - e_minus)/(epsilon * 2);
@@ -347,19 +349,8 @@ double Dynamics::GDiteratePose(int index, int iter)
 		// time_check_start();
 		double e_plus = evaluateEnergyPosition(target_plus);
 		// time_check_end();
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
-
 		initPose(target_minus[0]);
 		double e_minus = evaluateEnergyPosition(target_minus);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
 
 		total_error += std::abs(e_plus - e_minus);
 		grad[i] = (e_plus - e_minus)/(epsilon * 2);
@@ -398,11 +389,6 @@ double Dynamics::GDiteratePose(int index, int iter)
 
 		initPose(current_pose[0]);
 		double current_error = evaluateEnergyPosition(current_pose);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
 
 		if(current_error < prev_error){
 			prev_error = current_error;
@@ -590,6 +576,7 @@ void Dynamics::optimize(std::string name)
 	v = mCharacter->getVelocities();
 	p_ball = mBall->getPositions();
 	v_ball = mBall->getVelocities();
+
 	for(int i = 0; i < 3; ++i)
 		max_pose_target[i] = p_ball[i+3];
 	double acc = mWorld->getGravity()[1];
@@ -599,7 +586,7 @@ void Dynamics::optimize(std::string name)
 		else max_pose_target[i] += v_target[i]*time_max;
 	}
 	std::cout<< "max_pose " <<std::endl;
-	std::cout << max_pose_target << std::endl;
+	std::cout << max_pose_target.transpose() << std::endl;
 	//Initialize mControl, mOld, control indexes
 	std::vector<int> control_index;
 	control_index.push_back(2);
@@ -648,11 +635,6 @@ void Dynamics::optimize(std::string name)
 	initPose(mOldPose[0]);
 	// prev_error = evaluateEnergy(mOldPose);
 	prev_error = evaluateEnergyPosition(mOldPose);
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
 
 	//Iterate for each control indexes
 	//Stop when error < epsilon or after some iteration number
@@ -675,24 +657,24 @@ void Dynamics::optimize(std::string name)
 		// lambda = lambdaLearning(i, lambda);
 	}
 
+	std::cout << "mini simulation" << std::endl;
+
+	// mCharacter->resetCommands();
+	// mBall->resetCommands();
 	initPose(mOldPose[0]);
 	double final_error = evaluateEnergyPosition(mOldPose);
-	std::cout << "final error " << final_error <<std::endl;
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
+	std::cout << "final error1 " << final_error <<std::endl;
 
 	initPose(mOldPose[0]);
 	final_error = evaluateEnergyPosition(mOldPose);
-	std::cout << "final error " << final_error <<std::endl;
+	std::cout << "final error2 " << final_error <<std::endl;
+
+	mWorld->step(true);
 	mWorld->reset();
 	mCharacter->setPositions(p);
 	mCharacter->setVelocities(v);
 	mBall->setPositions(p_ball);
 	mBall->setVelocities(v_ball);
-
 
 	//Save algorithm
 	std::ofstream outFile("Result" + name + ".txt");	
