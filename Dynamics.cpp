@@ -11,11 +11,9 @@ int target_frame;
 double prev_error;
 int local = 0;
 double time_max;
-double weight = 4.00;
+double weight = 15.00;
 Eigen::VectorXd p;
-Eigen::VectorXd v;
 Eigen::VectorXd p_ball;
-Eigen::VectorXd v_ball;
 
 std::chrono::time_point<std::chrono::system_clock> time_check_s = std::chrono::system_clock::now();
 
@@ -308,11 +306,7 @@ double Dynamics::GDiterate(int index, int iter)
 
 		initPose(current_pose[0]);
 		double current_error = evaluateEnergy(current_pose);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
+
 		// std::cout << current_error <<std::endl;
 		if(current_error < prev_error){
 			prev_error = current_error;
@@ -451,21 +445,11 @@ double Dynamics::SGDiterate(int index, int iter)
 		std::vector<Eigen::VectorXd> target_minus = computePose(controlPts_minus_eps, index);
 		
 		initPose(target_plus[0]);
-
 		double e_plus = evaluateEnergy(target_plus);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
+
 
 		initPose(target_minus[0]);
 		double e_minus = evaluateEnergy(target_minus);
-		mWorld->reset();
-		mCharacter->setPositions(p);
-		mCharacter->setVelocities(v);
-		mBall->setPositions(p_ball);
-		mBall->setVelocities(v_ball);
 
 		total_error += std::abs(e_plus - e_minus);
 		double angle_step = (e_plus - e_minus)/(epsilon * 2) * lambda;
@@ -537,19 +521,9 @@ int Dynamics::lambdaLearning(int iter, int lambda)
 
 	initPose(target_plus[0]);
 	double e_plus = evaluateEnergy(target_plus);
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
 
 	initPose(target_minus[0]);
 	double e_minus = evaluateEnergy(target_minus);
-	mWorld->reset();
-	mCharacter->setPositions(p);
-	mCharacter->setVelocities(v);
-	mBall->setPositions(p_ball);
-	mBall->setVelocities(v_ball);
 
 	int step = (e_plus - e_minus) / (2 * epsilon) * weight;
 	if(step > max_step) step = max_step;
@@ -588,9 +562,7 @@ void Dynamics::optimize(std::string name)
 
 	//Values saved to be initialized
 	p = mCharacter->getPositions();
-	v = mCharacter->getVelocities();
 	p_ball = mBall->getPositions();
-	v_ball = mBall->getVelocities();
 
 	for(int i = 0; i < 3; ++i)
 		max_pose_target[i] = p_ball[i+3];

@@ -43,8 +43,8 @@ MyWindow::MyWindow(const WorldPtr& world) : SimWindow(), mForceCountDown(0), mPo
 	mController = dart::common::make_unique<Controller>(
 		mWorld->getSkeleton("hand"),tempTendon);
 
-	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0,4.2, 0.0));
-	dyn->optimize("Three_Ctrl_42_stepping_Trial_Pose");
+	dyn = new Dynamics(mWorld, Eigen::Vector3d(0.0,4.0, 0.0));
+	dyn->optimize("Three_Ctrl_4_stepping_Trial_Pose");
 
 	//Pregrabbing algorithm
 	currentpose = mController->mTargetPositions;
