@@ -11,7 +11,7 @@ int target_frame;
 double prev_error;
 int local = 0;
 double time_max;
-double weight = 15.00;
+double weight = 25.00;
 Eigen::VectorXd p;
 Eigen::VectorXd p_ball;
 
